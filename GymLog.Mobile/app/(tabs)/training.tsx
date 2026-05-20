@@ -1,7 +1,7 @@
 import { Text, View } from "react-native";
 import { colors } from "../../theme/colors";
 
-export default function Home() {
+export default function Training() {
   return (
     <View
       style={{
@@ -12,7 +12,7 @@ export default function Home() {
       }}
     >
       <Text style={{ color: colors.text, fontSize: 24, fontWeight: "bold" }}>
-        Home
+        Training
       </Text>
     </View>
   );
