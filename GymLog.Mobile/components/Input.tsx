@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { TextInput, View, Pressable, Text, StyleSheet } from "react-native";
+import {
+  TextInput,
+  View,
+  Pressable,
+  Text,
+  StyleSheet,
+  KeyboardTypeOptions,
+} from "react-native";
 import { colors } from "../theme/colors";
 
 type InputProps = {
@@ -7,6 +14,7 @@ type InputProps = {
   value: string;
   onChangeText: (text: string) => void;
   secureTextEntry?: boolean;
+  keyboardType?: KeyboardTypeOptions;
 };
 
 export default function Input({
@@ -14,6 +22,7 @@ export default function Input({
   value,
   onChangeText,
   secureTextEntry,
+  keyboardType,
 }: InputProps) {
   const [hidden, setHidden] = useState(true);
   const isPassword = !!secureTextEntry;
@@ -26,6 +35,7 @@ export default function Input({
         placeholderTextColor={colors.muted}
         value={value}
         onChangeText={onChangeText}
+        keyboardType={keyboardType}
       />
     );
   }

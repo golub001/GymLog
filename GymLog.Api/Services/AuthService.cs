@@ -28,7 +28,7 @@ namespace GymLog.Api.Services
             if (!flag) {
                 return new AuthResult { Success = false, Error = "Invalid email or password" };
             }
-            return new AuthResult { Success = true, Token = _tokenService.GenerateAccessToken(user) };
+            return new AuthResult { Success = true, Token = _tokenService.GenerateAccessToken(user), OnboardingCompleted = user.GoalType != null };
         }
 
         public async Task<AuthResult> RegisterAsync(RegisterDto dto)
@@ -53,7 +53,7 @@ namespace GymLog.Api.Services
             _database.Users.Add(user);
             await _database.SaveChangesAsync();
 
-            return new AuthResult { Success = true, Token = _tokenService.GenerateAccessToken(user) };
+            return new AuthResult { Success = true, Token = _tokenService.GenerateAccessToken(user),OnboardingCompleted=false };
         }
 
     }

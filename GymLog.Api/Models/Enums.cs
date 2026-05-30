@@ -15,7 +15,18 @@ public enum ActivityLevel
 
 public enum GoalType
 {
-    LoseWeight, 
-    GainMass,   
-    Maintain     
+    LoseWeight,
+    GainMass,
+    Maintain
+}
+
+public enum MuscleGroup
+{
+    Chest,
+    Back,
+    Shoulders,
+    Biceps,
+    Triceps,
+    Legs,
+    Core
 }

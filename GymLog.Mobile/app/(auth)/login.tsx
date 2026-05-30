@@ -31,7 +31,7 @@ export default function Login() {
   }
 
   if (result.token) {
-    await signIn(result.token);
+    await signIn(result.token, result.onboardingCompleted ?? false);
   }
 }
 

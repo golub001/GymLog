@@ -30,9 +30,8 @@ export default function Register() {
     }
 
     if (result.token) {
-      await signIn(result.token);
+      await signIn(result.token, result.onboardingCompleted ?? false);
     }
-
   }
 
   return (

@@ -2,6 +2,7 @@ export type AuthResult = {
   success: boolean;
   error?: string;
   token?: string;
+  onboardingCompleted?: boolean;
 };
 
 export type LoginRequest = {

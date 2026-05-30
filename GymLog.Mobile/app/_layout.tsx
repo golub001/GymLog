@@ -1,49 +1,59 @@
 import { Stack, useRouter, useSegments } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import { colors } from "../theme/colors";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 SystemUI.setBackgroundColorAsync(colors.bg);
 
 function RootLayoutNav() {
-  const { token, loading } = useAuth();
+  const { token, onboardingDone, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const [initialDone, setInitialDone] = useState(false);
+
+  const inAuthGroup = segments[0] === "(auth)";
+  const inOnboarding = segments[0] === "onboarding";
+  const needsLogin = !token && !inAuthGroup;
+  const needsOnboarding = token && !onboardingDone && !inOnboarding;
 
   useEffect(() => {
     if (loading) return;
-    const inAuthGroup = segments[0] === "(auth)";
 
-    if (!token && !inAuthGroup) {
-      router.replace("/login");
-    } else if (token && inAuthGroup) {
-      router.replace("/" as any);
+    if (!token) {
+      if (!inAuthGroup) router.replace("/login");
+    } else if (!onboardingDone) {
+      if (!inOnboarding) router.replace("/onboarding");
+    } else {
+      if (inAuthGroup || inOnboarding) router.replace("/" as any);
     }
-  }, [token, loading, segments]);
+  }, [token, onboardingDone, loading, segments]);
 
-  if (loading) return null;
+  useEffect(() => {
+    if (!loading && !needsLogin && !needsOnboarding && !initialDone) {
+      setInitialDone(true);
+    }
+  }, [loading, needsLogin, needsOnboarding, initialDone]);
 
-  const inAuthGroup = segments[0] === "(auth)";
-  if (!token && !inAuthGroup) return null;
+  const showLoading = loading || (!initialDone && (needsLogin || needsOnboarding));
 
   return (
-  <>
-    <StatusBar style="light" />
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        animation: "slide_from_right",
-        animationDuration: 250,
-        contentStyle: { backgroundColor: colors.bg },
-      }}
-    >
-      <Stack.Screen name="(tabs)" options={{ animation: "none" }} />
+    <>
+      <StatusBar style="light" />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: "fade",
+          animationDuration: 220,
+          contentStyle: { backgroundColor: colors.bg },
+        }}
+      />
 
-    </Stack>
-  </>
-);
+      <LoadingOverlay visible={showLoading} />
+    </>
+  );
 }
 
 export default function RootLayout() {
