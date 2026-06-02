@@ -1,8 +1,9 @@
-﻿using GymLog.Api.Models;
+using GymLog.Api.Models;
 using Microsoft.EntityFrameworkCore;
+
 namespace GymLog.Api.Data
 {
-    public class AppDbContext:DbContext
+    public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -10,5 +11,28 @@ namespace GymLog.Api.Data
         public DbSet<Exercise> Exercises { get; set; }
         public DbSet<Workout> Workouts { get; set; }
         public DbSet<WorkoutSet> WorkoutSets { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<User>()
+                .Property(u => u.Sex)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.ActivityLevel)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.GoalType)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
+            modelBuilder.Entity<Exercise>()
+                .Property(e => e.MuscleGroup)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+        }
     }
 }

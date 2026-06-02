@@ -5,12 +5,12 @@ namespace GymLog.Api.Services
 {
     public class UserService : IUserService
     {
-        private readonly AppDbContext _db;
+        private readonly AppDbContext _database;
         private readonly ICalorieCalculator _calculator;
 
         public UserService(AppDbContext db, ICalorieCalculator calc)
         {
-            _db = db;
+            _database = db;
             _calculator = calc;
         }
 
@@ -24,7 +24,7 @@ namespace GymLog.Api.Services
 
         public async Task<bool> CompleteOnboardingAsync(int userId, OnboardingFinishDto dto)
         {
-            var user = await _db.Users.FindAsync(userId);
+            var user = await _database.Users.FindAsync(userId);
             if (user == null)
             {
                 return false;
@@ -40,7 +40,7 @@ namespace GymLog.Api.Services
             user.DailyCalorieGoal = dto.CalorieGoal;
             user.DailyProteinGoal = (int)Math.Round((double)p.WeightKg * 1.8);
 
-            await _db.SaveChangesAsync();
+            await _database.SaveChangesAsync();
             return true;
         }
 

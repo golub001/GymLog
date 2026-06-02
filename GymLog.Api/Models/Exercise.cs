@@ -22,5 +22,8 @@ public class Exercise
     public string? Instructions { get; set; }
 
     [MaxLength(500)]
-    public string? YoutubeUrl { get; set; }
+    public string? ImageUrl { get; set; }
+
+    [MaxLength(500)]
+    public string? GifUrl { get; set; }
 }

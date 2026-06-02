@@ -22,9 +22,6 @@ public class User
     [MaxLength(100)]
     public string Name { get; set; } = string.Empty;
 
-    [MaxLength(500)]
-    public string? PhotoUrl { get; set; }
-
     public Sex? Sex { get; set; }
 
     public DateOnly? BirthDate { get; set; }

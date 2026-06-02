@@ -50,7 +50,14 @@ builder.Services.AddScoped<ITokenService,TokenService>();
 builder.Services.AddScoped<IAuthService,AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICalorieCalculator, CalorieCalculator>();
+builder.Services.AddScoped<IWorkoutService,WorkoutService>();
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DataSeeder.SeedExercisesAsync(db);
+}
 
 
 if (app.Environment.IsDevelopment())

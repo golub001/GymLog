@@ -1,0 +1,39 @@
+export type ExerciseSearchItem = {
+  id: number;
+  name: string;
+  muscleGroup: string;
+  equipment: string | null;
+  imageUrl: string | null;
+};
+
+export type WorkoutSetInput = {
+  exerciseId: number;
+  weightKg: number;
+  reps: number;
+};
+
+export type NewWorkout = {
+  workoutSets: WorkoutSetInput[];
+  notes: string | null;
+  date: string; // "YYYY-MM-DD"
+};
+
+export type WorkoutSetDetail = {
+  setOrder: number;
+  weightKg: number;
+  reps: number;
+};
+
+export type ExerciseBlock = {
+  exerciseId: number;
+  exerciseName: string;
+  muscleGroup: string;
+  sets: WorkoutSetDetail[];
+};
+
+export type WorkoutDetail = {
+  id: number;
+  date: string;
+  notes: string | null;
+  exercises: ExerciseBlock[];
+};

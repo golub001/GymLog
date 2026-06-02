@@ -3,6 +3,7 @@ using System;
 using GymLog.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GymLog.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260602120844_Workouts")]
+    partial class Workouts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,26 +37,20 @@ namespace GymLog.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("GifUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
                     b.Property<string>("Instructions")
                         .HasColumnType("text");
 
-                    b.Property<string>("MuscleGroup")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                    b.Property<int>("MuscleGroup")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
+
+                    b.Property<string>("YoutubeUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.HasKey("Id");
 
@@ -68,9 +65,8 @@ namespace GymLog.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ActivityLevel")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                    b.Property<int?>("ActivityLevel")
+                        .HasColumnType("integer");
 
                     b.Property<DateOnly?>("BirthDate")
                         .HasColumnType("date");
@@ -89,9 +85,8 @@ namespace GymLog.Api.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<string>("GoalType")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                    b.Property<int?>("GoalType")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("HeightCm")
                         .HasColumnType("integer");
@@ -106,9 +101,8 @@ namespace GymLog.Api.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<string>("Sex")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                    b.Property<int?>("Sex")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

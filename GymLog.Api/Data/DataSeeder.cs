@@ -1,0 +1,108 @@
+using System.Text.Json;
+using GymLog.Api.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace GymLog.Api.Data;
+
+public static class DataSeeder
+{
+    private const string GitHubBaseUrl =
+        "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/";
+
+    public static async Task SeedExercisesAsync(AppDbContext db)
+    {
+        if (await db.Exercises.AnyAsync()) return;
+
+        var jsonPath = Path.Combine(AppContext.BaseDirectory, "Data", "exercises.json");
+        if (!File.Exists(jsonPath)) return;
+
+        var json = await File.ReadAllTextAsync(jsonPath);
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+            PropertyNameCaseInsensitive = true
+        };
+
+        var raw = JsonSerializer.Deserialize<List<ExerciseJson>>(json, options);
+        if (raw == null) return;
+
+        var exercises = new List<Exercise>();
+        foreach (var r in raw)
+        {
+            var muscle = MapMuscleGroup(r.BodyPart, r.MuscleGroup);
+            if (muscle == null) continue;
+
+            string? instructions = null;
+            if (r.InstructionSteps?.En != null && r.InstructionSteps.En.Count > 0)
+            {
+                instructions = string.Join(
+                    "\n",
+                    r.InstructionSteps.En.Select((s, i) => $"{i + 1}. {s}"));
+            }
+
+            exercises.Add(new Exercise
+            {
+                Name = Capitalize(r.Name),
+                MuscleGroup = muscle.Value,
+                Equipment = !string.IsNullOrWhiteSpace(r.Equipment)
+                    ? Capitalize(r.Equipment)
+                    : null,
+                Instructions = instructions,
+                ImageUrl = !string.IsNullOrWhiteSpace(r.Image)
+                    ? GitHubBaseUrl + r.Image
+                    : null,
+                GifUrl = !string.IsNullOrWhiteSpace(r.GifUrl)
+                    ? GitHubBaseUrl + r.GifUrl
+                    : null
+            });
+        }
+
+        db.Exercises.AddRange(exercises);
+        await db.SaveChangesAsync();
+    }
+
+    private static MuscleGroup? MapMuscleGroup(string? bodyPart, string? muscleGroup)
+    {
+        var bp = bodyPart?.ToLowerInvariant() ?? "";
+        var mg = muscleGroup?.ToLowerInvariant() ?? "";
+
+        return bp switch
+        {
+            "chest" => MuscleGroup.Chest,
+            "back" => MuscleGroup.Back,
+            "shoulders" => MuscleGroup.Shoulders,
+            "waist" => MuscleGroup.Core,
+            "upper legs" => MuscleGroup.Legs,
+            "lower legs" => MuscleGroup.Legs,
+            "upper arms" => mg.Contains("biceps") ? MuscleGroup.Biceps
+                : mg.Contains("triceps") ? MuscleGroup.Triceps
+                : (MuscleGroup?)null,
+            "lower arms" => MuscleGroup.Biceps,
+            _ => null
+        };
+    }
+
+    private static string Capitalize(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return s;
+        return char.ToUpper(s[0]) + s.Substring(1);
+    }
+
+    private class ExerciseJson
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string BodyPart { get; set; } = "";
+        public string Equipment { get; set; } = "";
+        public InstructionStepsJson? InstructionSteps { get; set; }
+        public string MuscleGroup { get; set; } = "";
+        public string Target { get; set; } = "";
+        public string Image { get; set; } = "";
+        public string GifUrl { get; set; } = "";
+    }
+
+    private class InstructionStepsJson
+    {
+        public List<string>? En { get; set; }
+    }
+}
