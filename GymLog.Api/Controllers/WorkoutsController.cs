@@ -1,4 +1,5 @@
 ﻿using GymLog.Api.DTOs;
+using GymLog.Api.Models;
 using GymLog.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -47,6 +48,12 @@ namespace GymLog.Api.Controllers
         {
             int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             return Ok(await _workoutService.GetWorkoutsByDate(userId, date));
+        }
+
+        [HttpGet("muscle-stats")]
+        public async Task<IActionResult> GetMuscleStats()
+        {
+            return Ok(await _workoutService.GetWeeklyMuscleStats(int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!)));
         }
     }
 }

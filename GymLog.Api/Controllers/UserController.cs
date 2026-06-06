@@ -18,6 +18,15 @@ namespace GymLog.Api.Controllers
             _userService = userService;
         }
 
+        [HttpGet("me")]
+        public async Task<IActionResult> Me()
+        {
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var profile = await _userService.GetProfile(userId);
+            if (profile == null) return NotFound();
+            return Ok(profile);
+        }
+
         [HttpPost("onboarding/calculate")]
         public IActionResult Calculate(OnboardingDto dto)
         {

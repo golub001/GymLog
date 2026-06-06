@@ -30,3 +30,11 @@ public enum MuscleGroup
     Legs,
     Core
 }
+
+public enum MealType
+{
+    Breakfast,
+    Lunch,
+    Dinner,
+    Snack
+}

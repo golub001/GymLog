@@ -3,6 +3,7 @@ import {
   ExerciseSearchItem,
   NewWorkout,
   WorkoutDetail,
+  MuscleStat,
 } from "../dto/workout";
 
 export async function searchExercises(
@@ -53,6 +54,15 @@ export async function getWorkoutsByDate(
     const response = await api.get<WorkoutDetail[]>("/workouts/by-date", {
       params: { date },
     });
+    return response.data;
+  } catch {
+    return [];
+  }
+}
+
+export async function getMuscleStats(): Promise<MuscleStat[]> {
+  try {
+    const response = await api.get<MuscleStat[]>("/workouts/muscle-stats");
     return response.data;
   } catch {
     return [];

@@ -51,12 +51,15 @@ builder.Services.AddScoped<IAuthService,AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICalorieCalculator, CalorieCalculator>();
 builder.Services.AddScoped<IWorkoutService,WorkoutService>();
+builder.Services.AddScoped<IBodyWeightService, BodyWeightService>();
+builder.Services.AddScoped<INutritionService, NutritionService>();
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await DataSeeder.SeedExercisesAsync(db);
+    await FoodSeeder.SeedFoodsAsync(db);
 }
 
 

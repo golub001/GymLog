@@ -1,5 +1,6 @@
 using GymLog.Api.Data;
 using GymLog.Api.DTOs;
+using GymLog.Api.Models;
 
 namespace GymLog.Api.Services
 {
@@ -40,8 +41,28 @@ namespace GymLog.Api.Services
             user.DailyCalorieGoal = dto.CalorieGoal;
             user.DailyProteinGoal = (int)Math.Round((double)p.WeightKg * 1.8);
 
+            _database.BodyWeights.Add(new BodyWeight
+            {
+                UserId = userId,
+                Date = DateOnly.FromDateTime(DateTime.UtcNow),
+                WeightKg = p.WeightKg
+            });
+
             await _database.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<UserProfileDto?> GetProfile(int userId)
+        {
+            var user = await _database.Users.FindAsync(userId);
+            if (user == null) return null;
+
+            return new UserProfileDto
+            {
+                Name = user.Name,
+                DailyCalorieGoal = user.DailyCalorieGoal,
+                DailyProteinGoal = user.DailyProteinGoal
+            };
         }
 
         public int CalculateAge(DateOnly birthDate)

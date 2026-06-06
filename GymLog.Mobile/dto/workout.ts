@@ -37,3 +37,8 @@ export type WorkoutDetail = {
   notes: string | null;
   exercises: ExerciseBlock[];
 };
+
+export type MuscleStat = {
+  muscleGroup: string;
+  setCount: number;
+};

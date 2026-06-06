@@ -7,5 +7,7 @@ namespace GymLog.Api.Services
         OnboardingResultDto CalculatePlan(OnboardingDto dto);
 
         Task<bool> CompleteOnboardingAsync(int userId, OnboardingFinishDto dto);
+
+        Task<UserProfileDto?> GetProfile(int userId);
     }
 }

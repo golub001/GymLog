@@ -11,6 +11,9 @@ namespace GymLog.Api.Data
         public DbSet<Exercise> Exercises { get; set; }
         public DbSet<Workout> Workouts { get; set; }
         public DbSet<WorkoutSet> WorkoutSets { get; set; }
+        public DbSet<BodyWeight> BodyWeights { get; set; }
+        public DbSet<Food> Foods { get; set; }
+        public DbSet<DiaryEntry> DiaryEntries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,6 +34,11 @@ namespace GymLog.Api.Data
 
             modelBuilder.Entity<Exercise>()
                 .Property(e => e.MuscleGroup)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
+            modelBuilder.Entity<DiaryEntry>()
+                .Property(e => e.MealType)
                 .HasConversion<string>()
                 .HasMaxLength(20);
         }

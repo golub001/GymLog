@@ -91,5 +91,22 @@ namespace GymLog.Api.Services
                 ImageUrl = e.ImageUrl
             }).ToListAsync();
         }
+
+        public async Task<List<MuscleStatDto>> GetWeeklyMuscleStats(int userId)
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            int daySinceMonday = ((int)today.DayOfWeek + 6 )%7;
+            var weekStart=today.AddDays(-daySinceMonday);
+
+            return await _database.WorkoutSets
+                .Where(s => s.Workout.UserId == userId && s.Workout.Date >= weekStart)
+                .GroupBy(s => s.Exercise.MuscleGroup)
+                .Select(g=>  new MuscleStatDto
+                {
+                    MuscleGroup=g.Key.ToString(),
+                    SetCount=g.Count()
+                })
+                .ToListAsync();
+        }
     }
 }

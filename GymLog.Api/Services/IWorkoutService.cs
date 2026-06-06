@@ -9,5 +9,6 @@ namespace GymLog.Api.Services
         public Task<List<ExerciseSearchItemDto>> SearchExercises(String pattern);
         public Task<List<DateOnly>> SearchActiveDays(int userId, int year, int month);
         public Task<List<WorkoutDetailDto>> GetWorkoutsByDate(int userId, DateOnly date);
+        public Task<List<MuscleStatDto>> GetWeeklyMuscleStats(int userId);
     }
 }
