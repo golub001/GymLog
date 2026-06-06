@@ -80,9 +80,21 @@ namespace GymLog.Api.Services
             }).ToList();
         }
 
-        public async Task<List<ExerciseSearchItemDto>> SearchExercises(string pattern)
+        public async Task<List<ExerciseSearchItemDto>> SearchExercises(string pattern,string muscleGroup,string equpment)
         {
-            return await _database.Exercises.Where(u=>u.Name.Contains(pattern)).Take(20).Select(e => new ExerciseSearchItemDto
+            MuscleGroup? mg=null;
+
+            if (!string.IsNullOrEmpty(muscleGroup) && Enum.TryParse<MuscleGroup>(muscleGroup,true,out var parsed))
+            {
+                mg = parsed;
+            }
+            return await _database.Exercises.Where(u =>
+                    (string.IsNullOrEmpty(pattern) || u.Name.Contains(pattern)) &&
+                    (mg == null || u.MuscleGroup == mg) &&
+                    (string.IsNullOrEmpty(equpment) || u.Equipment == equpment)
+                )
+                .OrderBy(u=>u.Name)
+                .Take(20).Select(e => new ExerciseSearchItemDto
             {
                 Id = e.Id,
                 Name = e.Name,
@@ -90,6 +102,23 @@ namespace GymLog.Api.Services
                 Equipment = e.Equipment,
                 ImageUrl = e.ImageUrl
             }).ToListAsync();
+        }
+
+        public async Task<ExerciseDetailDto?> GetExerciseById(int id)
+        {
+            return await _database.Exercises
+                .Where(e => e.Id == id)
+                .Select(e => new ExerciseDetailDto
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    MuscleGroup = e.MuscleGroup.ToString(),
+                    Equipment = e.Equipment,
+                    Instructions = e.Instructions,
+                    ImageUrl = e.ImageUrl,
+                    GifUrl = e.GifUrl
+                })
+                .FirstOrDefaultAsync();
         }
 
         public async Task<List<MuscleStatDto>> GetWeeklyMuscleStats(int userId)

@@ -169,8 +169,24 @@ export default function Home() {
           </Pressable>
         </AnimatedCard>
 
+        {/* Exercise library */}
+        <AnimatedCard delay={400} style={styles.card}>
+          <Pressable onPress={() => router.push("/exercises" as any)}>
+            <View style={styles.cardHeaderRow}>
+              <View style={styles.cardTitleRow}>
+                <Ionicons name="library" size={18} color={colors.accent} />
+                <Text style={styles.cardTitle}>Exercise Library</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+            </View>
+            <Text style={styles.muscleHint}>
+              Browse exercises by muscle and equipment.
+            </Text>
+          </Pressable>
+        </AnimatedCard>
+
         {/* Quick actions */}
-        <AnimatedCard delay={400}>
+        <AnimatedCard delay={480}>
           <View style={styles.quickRow}>
             <QuickAction
               icon="restaurant"

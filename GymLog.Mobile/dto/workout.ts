@@ -42,3 +42,13 @@ export type MuscleStat = {
   muscleGroup: string;
   setCount: number;
 };
+
+export type ExerciseDetail = {
+  id: number;
+  name: string;
+  muscleGroup: string;
+  equipment: string | null;
+  instructions: string | null;
+  imageUrl: string | null;
+  gifUrl: string | null;
+};

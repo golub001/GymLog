@@ -31,9 +31,17 @@ namespace GymLog.Api.Controllers
             }
         }
         [HttpGet("exercises")]
-        public async Task<IActionResult> SearchExercises([FromQuery] string search)
+        public async Task<IActionResult> SearchExercises([FromQuery] string search, [FromQuery] string muscleGroup, [FromQuery] string equipment)
         {
-            return Ok(await _workoutService.SearchExercises(search));
+            return Ok(await _workoutService.SearchExercises(search,muscleGroup,equipment));
+        }
+
+        [HttpGet("exercises/{id}")]
+        public async Task<IActionResult> GetExerciseById(int id)
+        {
+            var exercise = await _workoutService.GetExerciseById(id);
+            if (exercise == null) return NotFound();
+            return Ok(exercise);
         }
 
         [HttpGet("dates")]

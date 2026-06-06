@@ -1,21 +1,35 @@
 import { api } from "./api";
 import {
   ExerciseSearchItem,
+  ExerciseDetail,
   NewWorkout,
   WorkoutDetail,
   MuscleStat,
 } from "../dto/workout";
 
 export async function searchExercises(
-  search: string
+  search: string,
+  muscleGroup?: string,
+  equipment?: string
 ): Promise<ExerciseSearchItem[]> {
   try {
     const response = await api.get<ExerciseSearchItem[]>("/workouts/exercises", {
-      params: { search },
+      params: { search, muscleGroup, equipment },
     });
     return response.data;
   } catch {
     return [];
+  }
+}
+
+export async function getExerciseById(
+  id: number
+): Promise<ExerciseDetail | null> {
+  try {
+    const response = await api.get<ExerciseDetail>(`/workouts/exercises/${id}`);
+    return response.data;
+  } catch {
+    return null;
   }
 }
 
