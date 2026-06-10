@@ -77,7 +77,6 @@ export default function Weight() {
     load();
   }
 
-  // Chart data: gifted-charts expects [{ value, label }]
   const chartData = entries.map((e, i) => ({
     value: e.weightKg,
     label:

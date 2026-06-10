@@ -19,6 +19,10 @@ public class Workout
 
     public string? Notes { get; set; }
 
+    public int? PlanDayId { get; set; }
+
+    public PlanDay? PlanDay { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<WorkoutSet> Sets { get; set; } = new List<WorkoutSet>();

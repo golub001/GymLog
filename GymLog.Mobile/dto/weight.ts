@@ -1,5 +1,5 @@
 export type WeightEntry = {
-  date: string; // "YYYY-MM-DD"
+  date: string;
   weightKg: number;
 };
 

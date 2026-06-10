@@ -15,7 +15,8 @@ export type WorkoutSetInput = {
 export type NewWorkout = {
   workoutSets: WorkoutSetInput[];
   notes: string | null;
-  date: string; // "YYYY-MM-DD"
+  date: string;
+  planDayId?: number | null;
 };
 
 export type WorkoutSetDetail = {
@@ -41,6 +42,7 @@ export type WorkoutDetail = {
 export type MuscleStat = {
   muscleGroup: string;
   setCount: number;
+  targetSets: number;
 };
 
 export type ExerciseDetail = {

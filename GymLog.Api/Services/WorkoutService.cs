@@ -13,7 +13,7 @@ namespace GymLog.Api.Services
             _database = database;
         }
 
-        public async Task<int> InsertNewWorkout(List<WorkoutSetDto> sets,int userId, DateOnly date,string notes = "")
+        public async Task<int> InsertNewWorkout(List<WorkoutSetDto> sets,int userId, DateOnly date,string notes = "", int? planDayId = null)
         {
 
             List<WorkoutSet> array = sets.GroupBy(s => s.ExerciseId)
@@ -29,7 +29,8 @@ namespace GymLog.Api.Services
                 Notes = notes,
                 Sets=array,
                 UserId = userId,
-                Date=date
+                Date=date,
+                PlanDayId = planDayId
             };
 
             await _database.Workouts.AddAsync(workout);
@@ -123,19 +124,42 @@ namespace GymLog.Api.Services
 
         public async Task<List<MuscleStatDto>> GetWeeklyMuscleStats(int userId)
         {
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
-            int daySinceMonday = ((int)today.DayOfWeek + 6 )%7;
-            var weekStart=today.AddDays(-daySinceMonday);
 
-            return await _database.WorkoutSets
-                .Where(s => s.Workout.UserId == userId && s.Workout.Date >= weekStart)
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            int daysSinceMonday = ((int)today.DayOfWeek + 6) % 7;
+            var since = today.AddDays(-daysSinceMonday);
+
+            var done = await _database.WorkoutSets
+                .Where(s => s.Workout.UserId == userId && s.Workout.Date >= since)
                 .GroupBy(s => s.Exercise.MuscleGroup)
-                .Select(g=>  new MuscleStatDto
-                {
-                    MuscleGroup=g.Key.ToString(),
-                    SetCount=g.Count()
-                })
+                .Select(g => new { Muscle = g.Key, Count = g.Count() })
                 .ToListAsync();
+
+            var activePlanId = await _database.Users
+                .Where(u => u.Id == userId)
+                .Select(u => u.ActivePlanId)
+                .FirstOrDefaultAsync();
+
+            var targets = activePlanId == null
+                ? new List<(MuscleGroup Muscle, int Target)>()
+                : (await _database.PlanExercises
+                    .Where(pe => pe.PlanDay.PlanId == activePlanId)
+                    .GroupBy(pe => pe.Exercise.MuscleGroup)
+                    .Select(g => new { Muscle = g.Key, Target = g.Sum(x => x.TargetSets) })
+                    .ToListAsync())
+                    .Select(x => (x.Muscle, x.Target))
+                    .ToList();
+
+            var muscles = done.Select(d => d.Muscle)
+                .Union(targets.Select(t => t.Muscle))
+                .Distinct();
+
+            return muscles.Select(m => new MuscleStatDto
+            {
+                MuscleGroup = m.ToString(),
+                SetCount = done.FirstOrDefault(d => d.Muscle == m)?.Count ?? 0,
+                TargetSets = targets.FirstOrDefault(t => t.Muscle == m).Target
+            }).ToList();
         }
     }
 }

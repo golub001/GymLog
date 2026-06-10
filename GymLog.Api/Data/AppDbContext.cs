@@ -14,6 +14,9 @@ namespace GymLog.Api.Data
         public DbSet<BodyWeight> BodyWeights { get; set; }
         public DbSet<Food> Foods { get; set; }
         public DbSet<DiaryEntry> DiaryEntries { get; set; }
+        public DbSet<Plan> Plans { get; set; }
+        public DbSet<PlanDay> PlanDays { get; set; }
+        public DbSet<PlanExercise> PlanExercises { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -41,6 +44,29 @@ namespace GymLog.Api.Data
                 .Property(e => e.MealType)
                 .HasConversion<string>()
                 .HasMaxLength(20);
+
+            modelBuilder.Entity<Plan>()
+                .Property(p => p.Source)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
+            modelBuilder.Entity<Plan>()
+                .HasOne(p => p.User)
+                .WithMany()
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.ActivePlan)
+                .WithMany()
+                .HasForeignKey(u => u.ActivePlanId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Workout>()
+                .HasOne(w => w.PlanDay)
+                .WithMany()
+                .HasForeignKey(w => w.PlanDayId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

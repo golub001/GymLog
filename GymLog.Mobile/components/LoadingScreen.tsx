@@ -1,8 +1,6 @@
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { colors } from "../theme/colors";
 
-// Prikazuje se dok aplikacija odlucuje kuda da posalje korisnika
-// (provera tokena / onboarding statusa).
 export default function LoadingScreen() {
   return (
     <View style={styles.container}>

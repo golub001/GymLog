@@ -19,6 +19,8 @@ import { colors } from "../theme/colors";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { ExerciseSearchItem, WorkoutSetInput } from "../dto/workout";
 import { searchExercises, insertWorkout } from "../services/workout";
+import { PlanDetail, weekdayName, todayDayOfWeek } from "../dto/plan";
+import { getActivePlan } from "../services/plan";
 
 type SetRow = { weight: string; reps: string };
 type ExerciseEntry = { exercise: ExerciseSearchItem; sets: SetRow[] };
@@ -56,6 +58,35 @@ export default function LogWorkout() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [activePlan, setActivePlan] = useState<PlanDetail | null>(null);
+  const [planPickerOpen, setPlanPickerOpen] = useState(false);
+  const [planDayId, setPlanDayId] = useState<number | null>(null);
+
+  useEffect(() => {
+    getActivePlan().then(setActivePlan);
+  }, []);
+
+  function loadPlanDay(dayId: number) {
+    const day = activePlan?.days.find((d) => d.id === dayId);
+    if (!day) return;
+    setEntries(
+      day.exercises.map((pe) => ({
+        exercise: {
+          id: pe.exerciseId,
+          name: pe.exerciseName,
+          muscleGroup: pe.muscleGroup,
+          equipment: pe.equipment,
+          imageUrl: pe.imageUrl,
+        },
+        sets: Array.from({ length: Math.max(pe.targetSets, 1) }, () => ({
+          weight: "",
+          reps: String(pe.targetReps),
+        })),
+      }))
+    );
+    setPlanDayId(dayId);
+    setPlanPickerOpen(false);
+  }
 
   function addExercise(exercise: ExerciseSearchItem) {
     setEntries((prev) => [
@@ -147,6 +178,7 @@ export default function LogWorkout() {
       workoutSets,
       notes: notes.trim() || null,
       date: selectedIso,
+      planDayId,
     });
     setLoading(false);
 
@@ -203,6 +235,48 @@ export default function LogWorkout() {
               );
             })}
           </ScrollView>
+
+          {activePlan && entries.length === 0 && (() => {
+            const todayDay = activePlan.days.find(
+              (d) => d.dayOfWeek === todayDayOfWeek()
+            );
+            return (
+              <Pressable
+                style={styles.planBanner}
+                onPress={() =>
+                  todayDay ? loadPlanDay(todayDay.id) : setPlanPickerOpen(true)
+                }
+              >
+                <Ionicons name="clipboard-outline" size={20} color={colors.accent} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.planBannerTitle}>
+                    {todayDay
+                      ? `Today's workout: ${todayDay.name}`
+                      : `Start from ${activePlan.name}`}
+                  </Text>
+                  <Text style={styles.planBannerSub}>
+                    {todayDay
+                      ? "Tap to pre-fill · or pick another day"
+                      : "Pre-fill exercises from your plan"}
+                  </Text>
+                </View>
+                <Pressable
+                  onPress={() => setPlanPickerOpen(true)}
+                  hitSlop={10}
+                  style={{ padding: 4 }}
+                >
+                  <Ionicons name="list" size={20} color={colors.muted} />
+                </Pressable>
+              </Pressable>
+            );
+          })()}
+
+          {planDayId != null && (
+            <Text style={styles.fromPlanNote}>
+              Logging from plan ·{" "}
+              {activePlan?.days.find((d) => d.id === planDayId)?.name}
+            </Text>
+          )}
 
           {entries.map((entry, ei) => (
             <View key={`${entry.exercise.id}-${ei}`} style={styles.card}>
@@ -302,6 +376,45 @@ export default function LogWorkout() {
         onClose={() => setPickerOpen(false)}
         onSelect={addExercise}
       />
+
+      <Modal
+        visible={planPickerOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPlanPickerOpen(false)}
+      >
+        <Pressable
+          style={styles.modalBackdrop}
+          onPress={() => setPlanPickerOpen(false)}
+        >
+          <Pressable style={styles.planSheet}>
+            <Text style={styles.planSheetTitle}>{activePlan?.name}</Text>
+            <Text style={styles.planSheetSub}>Pick the day you trained</Text>
+            {activePlan?.days.map((d) => {
+              const isToday = d.dayOfWeek === todayDayOfWeek();
+              return (
+                <Pressable
+                  key={d.id}
+                  style={styles.planDayRow}
+                  onPress={() => loadPlanDay(d.id)}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.planDayName}>
+                      {d.name}
+                      {isToday ? "  · Today" : ""}
+                    </Text>
+                    <Text style={styles.planDayMeta}>
+                      {d.dayOfWeek > 0 ? `${weekdayName(d.dayOfWeek)} · ` : ""}
+                      {d.exercises.length} exercises
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+                </Pressable>
+              );
+            })}
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       <LoadingOverlay visible={loading} />
     </SafeAreaView>
@@ -584,6 +697,50 @@ const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: "center",
   },
+  planBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 16,
+  },
+  planBannerTitle: { color: colors.text, fontSize: 15, fontWeight: "700" },
+  planBannerSub: { color: colors.muted, fontSize: 12, marginTop: 2 },
+  fromPlanNote: {
+    color: colors.accent,
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 16,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "flex-end",
+  },
+  planSheet: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.line,
+    padding: 22,
+    paddingBottom: 34,
+  },
+  planSheetTitle: { color: colors.text, fontSize: 18, fontWeight: "800" },
+  planSheetSub: { color: colors.muted, fontSize: 13, marginTop: 4, marginBottom: 14 },
+  planDayRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+  },
+  planDayName: { color: colors.text, fontSize: 16, fontWeight: "600" },
+  planDayMeta: { color: colors.muted, fontSize: 12, marginTop: 2 },
   searchWrap: {
     flexDirection: "row",
     alignItems: "center",

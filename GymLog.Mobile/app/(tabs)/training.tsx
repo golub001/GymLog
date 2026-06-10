@@ -50,7 +50,6 @@ export default function Training() {
     setLoadingDetail(false);
   }, []);
 
-  // Refetch whenever the tab regains focus (e.g. after logging a workout).
   useFocusEffect(
     useCallback(() => {
       loadActiveDays(visibleMonth.year, visibleMonth.month);

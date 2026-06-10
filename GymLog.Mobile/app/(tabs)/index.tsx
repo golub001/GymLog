@@ -8,9 +8,11 @@ import AnimatedCard from "../../components/AnimatedCard";
 import { UserProfile, DiaryDay } from "../../dto/nutrition";
 import { WorkoutDetail } from "../../dto/workout";
 import { WeightEntry } from "../../dto/weight";
+import { PlanDetail, todayDayOfWeek } from "../../dto/plan";
 import { getProfile, getDiary } from "../../services/nutrition";
 import { getWorkoutsByDate } from "../../services/workout";
 import { getWeights } from "../../services/weight";
+import { getActivePlan } from "../../services/plan";
 
 function todayIso(): string {
   const d = new Date();
@@ -34,6 +36,7 @@ export default function Home() {
   const [diary, setDiary] = useState<DiaryDay | null>(null);
   const [workouts, setWorkouts] = useState<WorkoutDetail[]>([]);
   const [weight, setWeight] = useState<WeightEntry | null>(null);
+  const [activePlan, setActivePlan] = useState<PlanDetail | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -42,8 +45,12 @@ export default function Home() {
       getDiary(today).then(setDiary);
       getWorkoutsByDate(today).then(setWorkouts);
       getWeights().then((w) => setWeight(w.length ? w[w.length - 1] : null));
+      getActivePlan().then(setActivePlan);
     }, [])
   );
+
+  const todayPlanDay =
+    activePlan?.days.find((d) => d.dayOfWeek === todayDayOfWeek()) ?? null;
 
   const calorieGoal = profile?.dailyCalorieGoal ?? 0;
   const consumed = diary ? round(diary.totalKcal) : 0;
@@ -124,6 +131,15 @@ export default function Home() {
                 Workout logged · {totalSets} sets
               </Text>
             </View>
+          ) : todayPlanDay ? (
+            <Text style={styles.trainingEmpty}>
+              Today's plan:{" "}
+              <Text style={{ color: colors.text, fontWeight: "700" }}>
+                {todayPlanDay.name}
+              </Text>
+            </Text>
+          ) : activePlan ? (
+            <Text style={styles.trainingEmpty}>Rest day — no workout planned.</Text>
           ) : (
             <Text style={styles.trainingEmpty}>No workout logged yet today.</Text>
           )}
@@ -136,7 +152,7 @@ export default function Home() {
           </Pressable>
         </AnimatedCard>
 
-        {/* Weight */}
+        {}
         <AnimatedCard delay={240} style={styles.card}>
           <Pressable onPress={() => router.push("/weight" as any)}>
             <View style={styles.cardHeaderRow}>
@@ -153,7 +169,7 @@ export default function Home() {
           </Pressable>
         </AnimatedCard>
 
-        {/* Muscle map */}
+        {}
         <AnimatedCard delay={320} style={styles.card}>
           <Pressable onPress={() => router.push("/muscle-map" as any)}>
             <View style={styles.cardHeaderRow}>

@@ -11,6 +11,8 @@ namespace GymLog.Api.DTOs
 
         public DateOnly Date {  get; set; }
 
+        public int? PlanDayId { get; set; }
+
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);

@@ -7,5 +7,6 @@ namespace GymLog.Api.DTOs
         public string MuscleGroup { get; set; } = "";
         public int SetCount { get; set; }
 
+        public int TargetSets { get; set; }
     }
 }

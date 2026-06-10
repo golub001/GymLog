@@ -22,7 +22,7 @@ namespace GymLog.Api.Controllers
             int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             try
             {
-                var result =await _workoutService.InsertNewWorkout(dto.WorkoutSets, userId, dto.Date, dto.Notes??"");
+                var result =await _workoutService.InsertNewWorkout(dto.WorkoutSets, userId, dto.Date, dto.Notes??"", dto.PlanDayId);
                 return Ok(new { workoutId = result });
             }
             catch (Exception ex)
@@ -31,9 +31,9 @@ namespace GymLog.Api.Controllers
             }
         }
         [HttpGet("exercises")]
-        public async Task<IActionResult> SearchExercises([FromQuery] string search, [FromQuery] string muscleGroup, [FromQuery] string equipment)
+        public async Task<IActionResult> SearchExercises([FromQuery] string? search, [FromQuery] string? muscleGroup, [FromQuery] string? equipment)
         {
-            return Ok(await _workoutService.SearchExercises(search,muscleGroup,equipment));
+            return Ok(await _workoutService.SearchExercises(search ?? "", muscleGroup ?? "", equipment ?? ""));
         }
 
         [HttpGet("exercises/{id}")]

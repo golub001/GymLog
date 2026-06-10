@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -53,6 +52,8 @@ builder.Services.AddScoped<ICalorieCalculator, CalorieCalculator>();
 builder.Services.AddScoped<IWorkoutService,WorkoutService>();
 builder.Services.AddScoped<IBodyWeightService, BodyWeightService>();
 builder.Services.AddScoped<INutritionService, NutritionService>();
+builder.Services.AddScoped<IPlanService, PlanService>();
+builder.Services.AddHttpClient<IAiPlanService, AiPlanService>();
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -60,8 +61,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await DataSeeder.SeedExercisesAsync(db);
     await FoodSeeder.SeedFoodsAsync(db);
+    await PlanSeeder.SeedPlansAsync(db);
 }
-
 
 if (app.Environment.IsDevelopment())
 {
@@ -73,7 +74,6 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
-
 
 app.UseCors("AllowAll");
 app.UseAuthentication();

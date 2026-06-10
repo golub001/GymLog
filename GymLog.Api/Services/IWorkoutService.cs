@@ -5,7 +5,7 @@ namespace GymLog.Api.Services
 {
     public interface IWorkoutService
     {
-        public Task<int> InsertNewWorkout(List<WorkoutSetDto> sets, int userId, DateOnly date, string notes = "");
+        public Task<int> InsertNewWorkout(List<WorkoutSetDto> sets, int userId, DateOnly date, string notes = "", int? planDayId = null);
         public Task<List<ExerciseSearchItemDto>> SearchExercises(String pattern,String musclegroup,string equipment);
         public Task<ExerciseDetailDto?> GetExerciseById(int id);
         public Task<List<DateOnly>> SearchActiveDays(int userId, int year, int month);

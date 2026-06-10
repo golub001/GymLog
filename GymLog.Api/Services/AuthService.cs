@@ -21,7 +21,7 @@ namespace GymLog.Api.Services
         public async Task<AuthResult> LoginAsync(LoginDto dto)
         {
             var user=await _database.Users.FirstOrDefaultAsync(u=> u.Email == dto.Email);
-            if (user == null) { 
+            if (user == null) {
                 return new AuthResult { Success = false,Error= "Invalid email or password" };
             }
             bool flag = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
@@ -47,8 +47,6 @@ namespace GymLog.Api.Services
                 PasswordHash = hash,
                 Name = dto.Name
             };
-
-
 
             _database.Users.Add(user);
             await _database.SaveChangesAsync();

@@ -3,6 +3,7 @@ using System;
 using GymLog.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GymLog.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260607203435_AddPlans")]
+    partial class AddPlans
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -191,9 +194,6 @@ namespace GymLog.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("DayOfWeek")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(60)
@@ -324,15 +324,10 @@ namespace GymLog.Api.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
-                    b.Property<int?>("PlanDayId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PlanDayId");
 
                     b.HasIndex("UserId");
 
@@ -453,18 +448,11 @@ namespace GymLog.Api.Migrations
 
             modelBuilder.Entity("GymLog.Api.Models.Workout", b =>
                 {
-                    b.HasOne("GymLog.Api.Models.PlanDay", "PlanDay")
-                        .WithMany()
-                        .HasForeignKey("PlanDayId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("GymLog.Api.Models.User", "User")
                         .WithMany("Workouts")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("PlanDay");
 
                     b.Navigation("User");
                 });

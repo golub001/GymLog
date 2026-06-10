@@ -15,7 +15,6 @@ import { colors } from "../theme/colors";
 import { MuscleStat } from "../dto/workout";
 import { getMuscleStats } from "../services/workout";
 
-// Our 7 backend groups → body-highlighter slugs (one-to-many).
 const MUSCLE_MAP: Record<string, Slug[]> = {
   Chest: ["chest"],
   Back: ["upper-back", "lower-back", "trapezius"],
@@ -36,13 +35,20 @@ const GROUP_ORDER = [
   "Core",
 ];
 
-// intensity 1..3 indexes into the colors array below.
 const INTENSITY_COLORS = ["#C4F82A55", "#C4F82AAA", "#C4F82A"];
 
-function bucket(setCount: number): number {
-  if (setCount >= 10) return 3;
-  if (setCount >= 5) return 2;
-  return 1;
+function intensityFor(stat: MuscleStat): number {
+  if (stat.targetSets > 0) {
+    const pct = stat.setCount / stat.targetSets;
+    if (pct >= 0.8) return 3;
+    if (pct >= 0.4) return 2;
+    if (pct > 0) return 1;
+    return 0;
+  }
+  if (stat.setCount >= 10) return 3;
+  if (stat.setCount >= 5) return 2;
+  if (stat.setCount > 0) return 1;
+  return 0;
 }
 
 export default function MuscleMap() {
@@ -60,18 +66,20 @@ export default function MuscleMap() {
     }, [])
   );
 
-  // Build the highlighter data: expand each group to its slugs.
+  const hasPlan = stats.some((s) => s.targetSets > 0);
+
   const bodyData: ExtendedBodyPart[] = [];
   for (const stat of stats) {
     const slugs = MUSCLE_MAP[stat.muscleGroup] ?? [];
-    const intensity = bucket(stat.setCount);
+    const intensity = intensityFor(stat);
+    if (intensity === 0) continue;
     for (const slug of slugs) {
       bodyData.push({ slug, intensity });
     }
   }
 
-  const countFor = (group: string) =>
-    stats.find((s) => s.muscleGroup === group)?.setCount ?? 0;
+  const statFor = (group: string) =>
+    stats.find((s) => s.muscleGroup === group) ?? null;
 
   const totalSets = stats.reduce((s, m) => s + m.setCount, 0);
 
@@ -90,7 +98,8 @@ export default function MuscleMap() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={styles.subtitle}>
-            This week · {totalSets} sets total
+            This week · {totalSets} sets
+            {hasPlan ? " · vs plan target" : ""}
           </Text>
 
           <View style={styles.toggleRow}>
@@ -134,32 +143,39 @@ export default function MuscleMap() {
             />
           </View>
 
-          <Text style={styles.sectionLabel}>This week</Text>
+          <Text style={styles.sectionLabel}>
+            {hasPlan ? "Progress vs plan" : "This week"}
+          </Text>
           {GROUP_ORDER.map((group) => {
-            const count = countFor(group);
-            const active = count > 0;
+            const stat = statFor(group);
+            const count = stat?.setCount ?? 0;
+            const target = stat?.targetSets ?? 0;
+            const intensity = stat ? intensityFor(stat) : 0;
             return (
               <View key={group} style={styles.statRow}>
                 <View
                   style={[
                     styles.dot,
                     {
-                      backgroundColor: active
-                        ? INTENSITY_COLORS[bucket(count) - 1]
-                        : colors.surface2,
+                      backgroundColor:
+                        intensity > 0
+                          ? INTENSITY_COLORS[intensity - 1]
+                          : colors.surface2,
                     },
                   ]}
                 />
                 <Text
                   style={[
                     styles.statName,
-                    !active && { color: colors.muted },
+                    count === 0 && { color: colors.muted },
                   ]}
                 >
                   {group}
                 </Text>
                 <Text style={styles.statCount}>
-                  {count} {count === 1 ? "set" : "sets"}
+                  {hasPlan && target > 0
+                    ? `${count} / ${target} sets`
+                    : `${count} ${count === 1 ? "set" : "sets"}`}
                 </Text>
               </View>
             );

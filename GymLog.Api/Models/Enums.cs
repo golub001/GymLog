@@ -8,9 +8,9 @@ public enum Sex
 
 public enum ActivityLevel
 {
-    Sedentary,   
-    Moderate,    
-    Active       
+    Sedentary,
+    Moderate,
+    Active
 }
 
 public enum GoalType
@@ -37,4 +37,11 @@ public enum MealType
     Lunch,
     Dinner,
     Snack
+}
+
+public enum PlanSource
+{
+    Preset,
+    AI,
+    Custom
 }

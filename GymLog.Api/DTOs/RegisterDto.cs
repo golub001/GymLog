@@ -15,6 +15,6 @@ namespace GymLog.Api.DTOs
         [MinLength(6)]
         [MaxLength(50)]
         public string Password { get; set; }=string.Empty;
-        
+
     }
 }

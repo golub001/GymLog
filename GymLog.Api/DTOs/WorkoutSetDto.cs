@@ -4,7 +4,7 @@ namespace GymLog.Api.DTOs
 {
     public class WorkoutSetDto
     {
-        
+
         public int ExerciseId { get; set; }
 
         [Range(0, 600)]

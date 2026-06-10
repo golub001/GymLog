@@ -36,6 +36,10 @@ public class User
 
     public int? DailyProteinGoal { get; set; }
 
+    public int? ActivePlanId { get; set; }
+
+    public Plan? ActivePlan { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<Workout> Workouts { get; set; } = new List<Workout>();

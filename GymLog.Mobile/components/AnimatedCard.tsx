@@ -7,10 +7,6 @@ type AnimatedCardProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-/**
- * Wraps content with a subtle fade + slide-up entrance animation.
- * Runs once on mount. Pass `delay` to stagger multiple cards.
- */
 export default function AnimatedCard({
   children,
   delay = 0,
