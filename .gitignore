@@ -1,0 +1,5 @@
+# Database backups / dumps
+gymlog_backup.sql
+*.backup
+*.dump
+*.sql.gz

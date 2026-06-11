@@ -100,6 +100,78 @@ public static class PlanSeeder
         new Ex("hanging leg raise", 3, 12),
     });
 
+    private static readonly DayDef BegA = new("Full Body A", new[]
+    {
+        new Ex("leg press", 3, 12),
+        new Ex("dumbbell bench press", 3, 10),
+        new Ex("lat pulldown", 3, 12),
+        new Ex("dumbbell standing overhead press", 3, 10),
+        new Ex("plank", 3, 30),
+    });
+
+    private static readonly DayDef BegB = new("Full Body B", new[]
+    {
+        new Ex("goblet squat", 3, 12),
+        new Ex("barbell incline bench press", 3, 10),
+        new Ex("chin-up", 3, 6),
+        new Ex("cable lateral raise", 3, 12),
+        new Ex("crunch", 3, 15),
+    });
+
+    private static readonly DayDef GluteA = new("Glutes & Legs A", new[]
+    {
+        new Ex("barbell full squat", 4, 10),
+        new Ex("barbell romanian deadlift", 4, 10),
+        new Ex("glute bridge", 3, 15),
+        new Ex("dumbbell lunge", 3, 12),
+        new Ex("barbell seated calf raise", 4, 15),
+    });
+
+    private static readonly DayDef UpperW = new("Upper Body", new[]
+    {
+        new Ex("lat pulldown", 3, 12),
+        new Ex("dumbbell bench press", 3, 10),
+        new Ex("dumbbell standing overhead press", 3, 12),
+        new Ex("cable lateral raise", 3, 15),
+        new Ex("bicep curl", 3, 12),
+    });
+
+    private static readonly DayDef GluteB = new("Glutes & Legs B", new[]
+    {
+        new Ex("leg press", 4, 12),
+        new Ex("barbell romanian deadlift", 3, 10),
+        new Ex("goblet squat", 3, 12),
+        new Ex("glute bridge", 3, 15),
+        new Ex("crunch", 3, 15),
+    });
+
+    private static readonly DayDef HomeA = new("Upper & Core", new[]
+    {
+        new Ex("push-up", 4, 12),
+        new Ex("chin-up", 3, 8),
+        new Ex("pull up", 3, 6),
+        new Ex("plank", 3, 30),
+        new Ex("mountain climber", 3, 20),
+    });
+
+    private static readonly DayDef HomeB = new("Lower & Cardio", new[]
+    {
+        new Ex("jump squat", 4, 15),
+        new Ex("glute bridge", 3, 15),
+        new Ex("skater hops", 3, 20),
+        new Ex("high knee against wall", 3, 20),
+        new Ex("jump rope", 3, 60),
+    });
+
+    private static readonly DayDef HomeC = new("Full Body & Cardio", new[]
+    {
+        new Ex("push-up", 3, 15),
+        new Ex("burpee", 3, 12),
+        new Ex("mountain climber", 3, 20),
+        new Ex("jump squat", 3, 15),
+        new Ex("hanging leg raise", 3, 15),
+    });
+
     private static readonly PresetDef[] Presets =
     {
         new("Full Body", "3 days/week (Mon/Wed/Fri). Great for beginners and general fitness.",
@@ -110,6 +182,12 @@ public static class PlanSeeder
             new[] { (UpperA, 1), (LowerA, 2), (UpperB, 4), (LowerB, 5) }),
         new("PPL ×2", "6 days/week (Mon–Sat). High volume for advanced lifters.",
             new[] { (Push, 1), (Pull, 2), (Legs, 3), (Push, 4), (Pull, 5), (Legs, 6) }),
+        new("Beginner Full Body", "3 days/week (Mon/Wed/Fri). Simple, gentle routine for new lifters.",
+            new[] { (BegA, 1), (BegB, 3), (BegA, 5) }),
+        new("Glutes & Legs", "3 days/week (Mon/Wed/Fri). Lower-body & glute focus, plus upper and core.",
+            new[] { (GluteA, 1), (UpperW, 3), (GluteB, 5) }),
+        new("Home Bodyweight", "3 days/week (Mon/Wed/Fri). No equipment needed — bodyweight + cardio.",
+            new[] { (HomeA, 1), (HomeB, 3), (HomeC, 5) }),
     };
 
     public static async Task SeedPlansAsync(AppDbContext db)
