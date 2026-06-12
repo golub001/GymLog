@@ -42,3 +42,12 @@ export type UserProfile = {
   dailyCalorieGoal: number | null;
   dailyProteinGoal: number | null;
 };
+
+export type NutritionSummary = {
+  days: number;
+  loggedDays: number;
+  avgKcal: number;
+  avgProtein: number;
+  avgCarbs: number;
+  avgFat: number;
+};

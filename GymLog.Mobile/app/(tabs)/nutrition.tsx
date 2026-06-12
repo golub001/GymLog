@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { PieChart } from "react-native-gifted-charts";
 import { colors } from "../../theme/colors";
@@ -63,6 +63,7 @@ function round(n: number): number {
 }
 
 export default function Nutrition() {
+  const router = useRouter();
   const [date, setDate] = useState(todayIso());
   const [diary, setDiary] = useState<DiaryDay | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -113,7 +114,15 @@ export default function Nutrition() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Nutrition</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>Nutrition</Text>
+          <Pressable
+            onPress={() => router.push("/nutrition-stats" as any)}
+            hitSlop={8}
+          >
+            <Ionicons name="stats-chart" size={20} color={colors.accent} />
+          </Pressable>
+        </View>
         <View style={styles.dateNav}>
           <Pressable onPress={() => setDate((d) => shiftDay(d, -1))} hitSlop={8}>
             <Ionicons name="chevron-back" size={22} color={colors.text} />
@@ -431,6 +440,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   title: { color: colors.text, fontSize: 24, fontWeight: "800" },
+  titleRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   dateNav: { flexDirection: "row", alignItems: "center", gap: 10 },
   dateLabel: {
     color: colors.text,

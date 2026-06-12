@@ -9,5 +9,6 @@ namespace GymLog.Api.Services
         Task<int> InsertDiaryEntry(int userId, int foodId, DateOnly date, MealType mealType, decimal grams);
         Task<DiaryDayDto> GetDiary(int userId, DateOnly date);
         Task<bool> DeleteDiaryEntry(int userId, int entryId);
+        Task<NutritionSummaryDto> GetSummary(int userId, int days);
     }
 }

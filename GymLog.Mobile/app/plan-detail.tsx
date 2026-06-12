@@ -187,12 +187,20 @@ export default function PlanDetailScreen() {
                   <Text style={styles.dayName}>{day.name}</Text>
                   {day.exercises.map((ex) => (
                     <View key={ex.id} style={styles.exRow}>
-                      <View style={{ flex: 1 }}>
+                      <Pressable
+                        style={{ flex: 1 }}
+                        onPress={() =>
+                          router.push({
+                            pathname: "/exercise-detail",
+                            params: { id: String(ex.exerciseId) },
+                          } as any)
+                        }
+                      >
                         <Text style={styles.exName} numberOfLines={1}>
                           {ex.exerciseName}
                         </Text>
                         <Text style={styles.exMeta}>{ex.muscleGroup}</Text>
-                      </View>
+                      </Pressable>
                       {editing ? (
                         <View style={styles.editControls}>
                           <Stepper

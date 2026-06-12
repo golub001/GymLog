@@ -4,7 +4,21 @@ import {
   FoodSearchItem,
   MealType,
   UserProfile,
+  NutritionSummary,
 } from "../dto/nutrition";
+
+export async function getNutritionSummary(
+  days: number
+): Promise<NutritionSummary | null> {
+  try {
+    const response = await api.get<NutritionSummary>("/nutrition/summary", {
+      params: { days },
+    });
+    return response.data;
+  } catch {
+    return null;
+  }
+}
 
 export async function searchFoods(
   search: string

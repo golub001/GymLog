@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { colors } from "../theme/colors";
 import Input from "../components/Input";
 import Button from "../components/Button";
@@ -17,6 +18,7 @@ import {
 
 export default function Onboarding() {
   const { completeOnboarding: markOnboardingDone } = useAuth();
+  const router = useRouter();
 
   const [step, setStep] = useState(1);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +96,7 @@ export default function Onboarding() {
     }
 
     await markOnboardingDone();
+    router.replace("/plan-finder" as any);
   }
 
   return (

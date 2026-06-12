@@ -13,7 +13,7 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
 import LoadingOverlay from "../components/LoadingOverlay";
@@ -50,6 +50,7 @@ function lastSevenDays(): DayOption[] {
 
 export default function LogWorkout() {
   const router = useRouter();
+  const { planDayId: paramDayId } = useLocalSearchParams<{ planDayId?: string }>();
   const days = lastSevenDays();
 
   const [selectedIso, setSelectedIso] = useState(days[0].iso);
@@ -63,12 +64,16 @@ export default function LogWorkout() {
   const [planDayId, setPlanDayId] = useState<number | null>(null);
 
   useEffect(() => {
-    getActivePlan().then(setActivePlan);
+    getActivePlan().then((p) => {
+      setActivePlan(p);
+      if (p && paramDayId) {
+        const day = p.days.find((d) => d.id === Number(paramDayId));
+        if (day) applyDay(day);
+      }
+    });
   }, []);
 
-  function loadPlanDay(dayId: number) {
-    const day = activePlan?.days.find((d) => d.id === dayId);
-    if (!day) return;
+  function applyDay(day: PlanDetail["days"][number]) {
     setEntries(
       day.exercises.map((pe) => ({
         exercise: {
@@ -84,8 +89,13 @@ export default function LogWorkout() {
         })),
       }))
     );
-    setPlanDayId(dayId);
+    setPlanDayId(day.id);
     setPlanPickerOpen(false);
+  }
+
+  function loadPlanDay(dayId: number) {
+    const day = activePlan?.days.find((d) => d.id === dayId);
+    if (day) applyDay(day);
   }
 
   function addExercise(exercise: ExerciseSearchItem) {
@@ -281,15 +291,32 @@ export default function LogWorkout() {
           {entries.map((entry, ei) => (
             <View key={`${entry.exercise.id}-${ei}`} style={styles.card}>
               <View style={styles.cardHeader}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.exerciseName}>{entry.exercise.name}</Text>
-                  <Text style={styles.exerciseMeta}>
-                    {entry.exercise.muscleGroup}
-                    {entry.exercise.equipment
-                      ? ` · ${entry.exercise.equipment}`
-                      : ""}
-                  </Text>
-                </View>
+                <Pressable
+                  style={styles.exerciseTitleBtn}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/exercise-detail",
+                      params: { id: String(entry.exercise.id) },
+                    } as any)
+                  }
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.exerciseName}>
+                      {entry.exercise.name}
+                    </Text>
+                    <Text style={styles.exerciseMeta}>
+                      {entry.exercise.muscleGroup}
+                      {entry.exercise.equipment
+                        ? ` · ${entry.exercise.equipment}`
+                        : ""}
+                    </Text>
+                  </View>
+                  <Ionicons
+                    name="information-circle-outline"
+                    size={18}
+                    color={colors.muted}
+                  />
+                </Pressable>
                 <Pressable onPress={() => removeExercise(ei)} hitSlop={8}>
                   <Ionicons
                     name="trash-outline"
@@ -596,6 +623,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     marginBottom: 12,
+  },
+  exerciseTitleBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   exerciseName: {
     color: colors.text,

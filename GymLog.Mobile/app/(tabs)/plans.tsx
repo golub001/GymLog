@@ -45,6 +45,20 @@ export default function Plans() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <Pressable
+            style={styles.finderBtn}
+            onPress={() => router.push("/plan-finder" as any)}
+          >
+            <Ionicons name="help-circle" size={20} color={colors.accent} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.finderText}>Find your plan</Text>
+              <Text style={styles.finderSub}>
+                Answer a few questions for a suggestion
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+          </Pressable>
+
+          <Pressable
             style={styles.aiBtn}
             onPress={() => router.push("/generate-plan" as any)}
           >
@@ -130,6 +144,19 @@ const styles = StyleSheet.create({
   },
   aiBtnText: { color: colors.bg, fontSize: 16, fontWeight: "800" },
   aiBtnSub: { color: colors.bg, fontSize: 12, fontWeight: "500", marginTop: 2, opacity: 0.8 },
+  finderBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.line,
+    padding: 16,
+    marginBottom: 12,
+  },
+  finderText: { color: colors.text, fontSize: 16, fontWeight: "700" },
+  finderSub: { color: colors.muted, fontSize: 12, marginTop: 2 },
   sectionLabel: {
     color: colors.muted,
     fontSize: 12,

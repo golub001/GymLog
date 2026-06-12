@@ -93,5 +93,39 @@ namespace GymLog.Api.Services
             await _database.SaveChangesAsync();
             return true;
         }
+
+        public async Task<NutritionSummaryDto> GetSummary(int userId, int days)
+        {
+            if (days < 1) days = 7;
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var since = today.AddDays(-(days - 1));
+
+            var entries = await _database.DiaryEntries
+                .Where(e => e.UserId == userId && e.Date >= since && e.Date <= today)
+                .Include(e => e.Food)
+                .ToListAsync();
+
+            var loggedDays = entries.Select(e => e.Date).Distinct().Count();
+            decimal kcal = 0, protein = 0, carbs = 0, fat = 0;
+            foreach (var e in entries)
+            {
+                var factor = e.Grams / 100m;
+                kcal += e.Food.KcalPer100g * factor;
+                protein += e.Food.ProteinPer100g * factor;
+                carbs += e.Food.CarbsPer100g * factor;
+                fat += e.Food.FatPer100g * factor;
+            }
+
+            int divisor = loggedDays > 0 ? loggedDays : 1;
+            return new NutritionSummaryDto
+            {
+                Days = days,
+                LoggedDays = loggedDays,
+                AvgKcal = Math.Round(kcal / divisor, 0),
+                AvgProtein = Math.Round(protein / divisor, 0),
+                AvgCarbs = Math.Round(carbs / divisor, 0),
+                AvgFat = Math.Round(fat / divisor, 0)
+            };
+        }
     }
 }

@@ -38,6 +38,12 @@ namespace GymLog.Api.Controllers
             return Ok(await _nutritionService.GetDiary(UserId, date));
         }
 
+        [HttpGet("summary")]
+        public async Task<IActionResult> GetSummary([FromQuery] int days = 7)
+        {
+            return Ok(await _nutritionService.GetSummary(UserId, days));
+        }
+
         [HttpDelete("diary/{entryId}")]
         public async Task<IActionResult> DeleteDiaryEntry(int entryId)
         {

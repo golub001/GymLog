@@ -43,6 +43,16 @@ namespace GymLog.Api.DTOs
         public decimal Fat { get; set; }
     }
 
+    public class NutritionSummaryDto
+    {
+        public int Days { get; set; }
+        public int LoggedDays { get; set; }
+        public decimal AvgKcal { get; set; }
+        public decimal AvgProtein { get; set; }
+        public decimal AvgCarbs { get; set; }
+        public decimal AvgFat { get; set; }
+    }
+
     public class DiaryDayDto
     {
         public DateOnly Date { get; set; }

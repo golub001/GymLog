@@ -145,10 +145,21 @@ export default function Home() {
           )}
           <Pressable
             style={styles.cardButton}
-            onPress={() => router.push("/log-workout" as any)}
+            onPress={() =>
+              todayPlanDay && !trainedToday
+                ? router.push({
+                    pathname: "/log-workout",
+                    params: { planDayId: String(todayPlanDay.id) },
+                  } as any)
+                : router.push("/log-workout" as any)
+            }
           >
             <Ionicons name="add" size={18} color={colors.bg} />
-            <Text style={styles.cardButtonText}>Log Workout</Text>
+            <Text style={styles.cardButtonText}>
+              {todayPlanDay && !trainedToday
+                ? `Start ${todayPlanDay.name}`
+                : "Log Workout"}
+            </Text>
           </Pressable>
         </AnimatedCard>
 
