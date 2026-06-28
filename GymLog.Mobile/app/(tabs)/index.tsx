@@ -10,7 +10,7 @@ import { WorkoutDetail } from "../../dto/workout";
 import { WeightEntry } from "../../dto/weight";
 import { PlanDetail, todayDayOfWeek } from "../../dto/plan";
 import { getProfile, getDiary } from "../../services/nutrition";
-import { getWorkoutsByDate } from "../../services/workout";
+import { getWorkoutsByDate, getStreak } from "../../services/workout";
 import { getWeights } from "../../services/weight";
 import { getActivePlan } from "../../services/plan";
 
@@ -37,6 +37,7 @@ export default function Home() {
   const [workouts, setWorkouts] = useState<WorkoutDetail[]>([]);
   const [weight, setWeight] = useState<WeightEntry | null>(null);
   const [activePlan, setActivePlan] = useState<PlanDetail | null>(null);
+  const [streak, setStreak] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -46,6 +47,7 @@ export default function Home() {
       getWorkoutsByDate(today).then(setWorkouts);
       getWeights().then((w) => setWeight(w.length ? w[w.length - 1] : null));
       getActivePlan().then(setActivePlan);
+      getStreak().then(setStreak);
     }, [])
   );
 
@@ -69,10 +71,20 @@ export default function Home() {
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content}>
         <AnimatedCard delay={0}>
-          <Text style={styles.greeting}>
-            Hello{profile?.name ? `, ${profile.name.split(" ")[0]}` : ""}
-          </Text>
-          <Text style={styles.subGreeting}>Here's your day at a glance.</Text>
+          <View style={styles.greetingRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.greeting}>
+                Hello{profile?.name ? `, ${profile.name.split(" ")[0]}` : ""}
+              </Text>
+              <Text style={styles.subGreeting}>Here's your day at a glance.</Text>
+            </View>
+            {streak > 0 && (
+              <View style={styles.streakBadge}>
+                <Ionicons name="flame" size={20} color={colors.orange} />
+                <Text style={styles.streakNum}>{streak}</Text>
+              </View>
+            )}
+          </View>
         </AnimatedCard>
 
         {/* Calories */}
@@ -252,8 +264,21 @@ function QuickAction({
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   content: { padding: 18, paddingBottom: 40 },
+  greetingRow: { flexDirection: "row", alignItems: "center" },
   greeting: { color: colors.text, fontSize: 26, fontWeight: "800" },
   subGreeting: { color: colors.muted, fontSize: 14, marginTop: 4 },
+  streakBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.orange,
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  streakNum: { color: colors.text, fontSize: 16, fontWeight: "800" },
   card: {
     backgroundColor: colors.surface,
     borderRadius: 16,

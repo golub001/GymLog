@@ -83,6 +83,21 @@ export default function ExerciseDetailScreen() {
             ) : null}
           </View>
 
+          {exercise.personalBest && (
+            <>
+              <Text style={styles.sectionLabel}>Personal Best</Text>
+              <View style={styles.pbRow}>
+                <Ionicons name="trophy" size={18} color={colors.accent} />
+                <Text style={styles.pbText}>
+                  {Number.isInteger(exercise.personalBest.weightKg)
+                    ? exercise.personalBest.weightKg
+                    : exercise.personalBest.weightKg.toFixed(1)}{" "}
+                  kg × {exercise.personalBest.reps} reps
+                </Text>
+              </View>
+            </>
+          )}
+
           {steps.length > 0 && (
             <>
               <Text style={styles.sectionLabel}>Instructions</Text>
@@ -159,6 +174,21 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   stepText: { color: colors.text, fontSize: 14, lineHeight: 20 },
+  pbRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: 12,
+    padding: 14,
+  },
+  pbText: {
+    color: colors.accent,
+    fontSize: 16,
+    fontWeight: "700",
+  },
   empty: {
     color: colors.muted,
     fontSize: 14,

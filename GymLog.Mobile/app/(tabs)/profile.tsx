@@ -61,6 +61,20 @@ export default function Profile() {
         <Ionicons name="chevron-forward" size={20} color={colors.muted} />
       </Pressable>
 
+      <Pressable
+        style={styles.weightCard}
+        onPress={() => router.push("/personal-bests" as any)}
+      >
+        <View style={styles.weightIcon}>
+          <Ionicons name="trophy-outline" size={22} color={colors.accent} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.weightLabel}>Personal Bests</Text>
+          <Text style={styles.weightValue}>Your records</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={colors.muted} />
+      </Pressable>
+
       <View style={{ marginTop: 30 }}>
         <Button title="Log out" onPress={signOut} variant="ghost" />
       </View>

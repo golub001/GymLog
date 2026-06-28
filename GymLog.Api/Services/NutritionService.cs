@@ -15,9 +15,12 @@ namespace GymLog.Api.Services
 
         public async Task<List<FoodSearchItemDto>> SearchFoods(string pattern)
         {
+            var p = (pattern ?? "").ToLower();
             return await _database.Foods
-                .Where(f => f.Name.Contains(pattern))
-                .OrderBy(f => f.Name)
+                .Where(f => EF.Functions.ILike(f.Name, $"%{p}%"))
+                // names starting with the term first, then shortest (most basic) first
+                .OrderByDescending(f => EF.Functions.ILike(f.Name, $"{p}%"))
+                .ThenBy(f => f.Name.Length)
                 .Take(20)
                 .Select(f => new FoodSearchItemDto
                 {

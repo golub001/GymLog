@@ -90,7 +90,7 @@ namespace GymLog.Api.Services
                 mg = parsed;
             }
             return await _database.Exercises.Where(u =>
-                    (string.IsNullOrEmpty(pattern) || u.Name.Contains(pattern)) &&
+                    (string.IsNullOrEmpty(pattern) || EF.Functions.ILike(u.Name, $"%{pattern}%")) &&
                     (mg == null || u.MuscleGroup == mg) &&
                     (string.IsNullOrEmpty(equpment) || u.Equipment == equpment)
                 )
@@ -105,9 +105,9 @@ namespace GymLog.Api.Services
             }).ToListAsync();
         }
 
-        public async Task<ExerciseDetailDto?> GetExerciseById(int id)
+        public async Task<ExerciseDetailDto?> GetExerciseById(int id, int? userId = null)
         {
-            return await _database.Exercises
+            var exercise = await _database.Exercises
                 .Where(e => e.Id == id)
                 .Select(e => new ExerciseDetailDto
                 {
@@ -120,6 +120,73 @@ namespace GymLog.Api.Services
                     GifUrl = e.GifUrl
                 })
                 .FirstOrDefaultAsync();
+
+            if (exercise == null || userId == null) return exercise;
+
+            var pb = await _database.WorkoutSets
+                .Where(s => s.ExerciseId == id && s.Workout.UserId == userId && s.WeightKg > 0)
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    WeightKg = g.Max(s => s.WeightKg),
+                })
+                .FirstOrDefaultAsync();
+
+            if (pb != null)
+            {
+                var reps = await _database.WorkoutSets
+                    .Where(s => s.ExerciseId == id && s.Workout.UserId == userId && s.WeightKg == pb.WeightKg)
+                    .OrderByDescending(s => s.Reps)
+                    .Select(s => s.Reps)
+                    .FirstOrDefaultAsync();
+
+                exercise.PersonalBest = new PersonalBestDto
+                {
+                    ExerciseId = id,
+                    ExerciseName = exercise.Name,
+                    MuscleGroup = exercise.MuscleGroup,
+                    WeightKg = pb.WeightKg,
+                    Reps = reps
+                };
+            }
+
+            return exercise;
+        }
+
+        public async Task<List<PersonalBestDto>> GetPersonalBests(int userId)
+        {
+            var maxWeights = await _database.WorkoutSets
+                .Where(s => s.Workout.UserId == userId && s.WeightKg > 0)
+                .GroupBy(s => new { s.ExerciseId, s.Exercise.Name, MG = s.Exercise.MuscleGroup })
+                .Select(g => new
+                {
+                    g.Key.ExerciseId,
+                    g.Key.Name,
+                    g.Key.MG,
+                    WeightKg = g.Max(s => s.WeightKg)
+                })
+                .ToListAsync();
+
+            var result = new List<PersonalBestDto>();
+            foreach (var item in maxWeights)
+            {
+                var reps = await _database.WorkoutSets
+                    .Where(s => s.Workout.UserId == userId && s.ExerciseId == item.ExerciseId && s.WeightKg == item.WeightKg)
+                    .OrderByDescending(s => s.Reps)
+                    .Select(s => s.Reps)
+                    .FirstOrDefaultAsync();
+
+                result.Add(new PersonalBestDto
+                {
+                    ExerciseId = item.ExerciseId,
+                    ExerciseName = item.Name,
+                    MuscleGroup = item.MG.ToString(),
+                    WeightKg = item.WeightKg,
+                    Reps = reps
+                });
+            }
+
+            return result;
         }
 
         public async Task<List<MuscleStatDto>> GetWeeklyMuscleStats(int userId)
@@ -160,6 +227,67 @@ namespace GymLog.Api.Services
                 SetCount = done.FirstOrDefault(d => d.Muscle == m)?.Count ?? 0,
                 TargetSets = targets.FirstOrDefault(t => t.Muscle == m).Target
             }).ToList();
+        }
+
+        public async Task<int> GetStreak(int userId)
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            var activePlanId = await _database.Users
+                .Where(u => u.Id == userId)
+                .Select(u => u.ActivePlanId)
+                .FirstOrDefaultAsync();
+
+            var trainingDows = activePlanId == null
+                ? new HashSet<int>()
+                : (await _database.PlanDays
+                    .Where(d => d.PlanId == activePlanId)
+                    .Select(d => d.DayOfWeek)
+                    .Distinct()
+                    .ToListAsync()).ToHashSet();
+
+            var loggedDates = (await _database.Workouts
+                .Where(w => w.UserId == userId && w.Date >= today.AddDays(-180))
+                .Select(w => w.Date)
+                .Distinct()
+                .ToListAsync()).ToHashSet();
+
+            if (loggedDates.Count == 0) return 0;
+
+            // 1 = Monday ... 7 = Sunday
+            int Dow(DateOnly d) => ((int)d.DayOfWeek + 6) % 7 + 1;
+
+            int streak = 0;
+            var day = today;
+
+            // no active plan -> simple consecutive logged days (today may still be pending)
+            if (trainingDows.Count == 0)
+            {
+                if (!loggedDates.Contains(day)) day = day.AddDays(-1);
+                while (loggedDates.Contains(day)) { streak++; day = day.AddDays(-1); }
+                return streak;
+            }
+
+            // with plan: training day must be logged, rest day always counts.
+            // today's training not logged yet -> don't break, start from yesterday.
+            if (trainingDows.Contains(Dow(today)) && !loggedDates.Contains(today))
+                day = today.AddDays(-1);
+
+            int guard = 0;
+            while (guard++ < 400)
+            {
+                if (trainingDows.Contains(Dow(day)))
+                {
+                    if (loggedDates.Contains(day)) { streak++; day = day.AddDays(-1); }
+                    else break; // missed a training day -> streak ends
+                }
+                else
+                {
+                    streak++; // rest day counts
+                    day = day.AddDays(-1);
+                }
+            }
+            return streak;
         }
     }
 }

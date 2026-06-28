@@ -39,9 +39,17 @@ namespace GymLog.Api.Controllers
         [HttpGet("exercises/{id}")]
         public async Task<IActionResult> GetExerciseById(int id)
         {
-            var exercise = await _workoutService.GetExerciseById(id);
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var exercise = await _workoutService.GetExerciseById(id, userId);
             if (exercise == null) return NotFound();
             return Ok(exercise);
+        }
+
+        [HttpGet("personal-bests")]
+        public async Task<IActionResult> GetPersonalBests()
+        {
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            return Ok(await _workoutService.GetPersonalBests(userId));
         }
 
         [HttpGet("dates")]
@@ -56,6 +64,13 @@ namespace GymLog.Api.Controllers
         {
             int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             return Ok(await _workoutService.GetWorkoutsByDate(userId, date));
+        }
+
+        [HttpGet("streak")]
+        public async Task<IActionResult> GetStreak()
+        {
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            return Ok(new { streak = await _workoutService.GetStreak(userId) });
         }
 
         [HttpGet("muscle-stats")]

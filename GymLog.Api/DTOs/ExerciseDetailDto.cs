@@ -9,5 +9,6 @@ namespace GymLog.Api.DTOs
         public string? Instructions { get; set; }
         public string? ImageUrl { get; set; }
         public string? GifUrl { get; set; }
+        public PersonalBestDto? PersonalBest { get; set; }
     }
 }

@@ -45,6 +45,14 @@ export type MuscleStat = {
   targetSets: number;
 };
 
+export type PersonalBest = {
+  exerciseId: number;
+  exerciseName: string;
+  muscleGroup: string;
+  weightKg: number;
+  reps: number;
+};
+
 export type ExerciseDetail = {
   id: number;
   name: string;
@@ -53,4 +61,5 @@ export type ExerciseDetail = {
   instructions: string | null;
   imageUrl: string | null;
   gifUrl: string | null;
+  personalBest: PersonalBest | null;
 };

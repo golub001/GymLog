@@ -5,6 +5,7 @@ import {
   NewWorkout,
   WorkoutDetail,
   MuscleStat,
+  PersonalBest,
 } from "../dto/workout";
 
 export async function searchExercises(
@@ -77,6 +78,24 @@ export async function getWorkoutsByDate(
 export async function getMuscleStats(): Promise<MuscleStat[]> {
   try {
     const response = await api.get<MuscleStat[]>("/workouts/muscle-stats");
+    return response.data;
+  } catch {
+    return [];
+  }
+}
+
+export async function getStreak(): Promise<number> {
+  try {
+    const response = await api.get<{ streak: number }>("/workouts/streak");
+    return response.data.streak;
+  } catch {
+    return 0;
+  }
+}
+
+export async function getPersonalBests(): Promise<PersonalBest[]> {
+  try {
+    const response = await api.get<PersonalBest[]>("/workouts/personal-bests");
     return response.data;
   } catch {
     return [];
