@@ -27,6 +27,15 @@ namespace GymLog.Api.Controllers
             return Ok(profile);
         }
 
+        [HttpPost("push-token")]
+        public async Task<IActionResult> SavePushToken([FromBody] PushTokenDto dto)
+        {
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var ok = await _userService.SavePushToken(userId, dto.Token);
+            if (!ok) return NotFound();
+            return Ok();
+        }
+
         [HttpPost("onboarding/calculate")]
         public IActionResult Calculate(OnboardingDto dto)
         {

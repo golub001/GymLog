@@ -9,10 +9,12 @@ import { UserProfile, DiaryDay } from "../../dto/nutrition";
 import { WorkoutDetail } from "../../dto/workout";
 import { WeightEntry } from "../../dto/weight";
 import { PlanDetail, todayDayOfWeek } from "../../dto/plan";
+import { Session } from "../../dto/sessions";
 import { getProfile, getDiary } from "../../services/nutrition";
 import { getWorkoutsByDate, getStreak } from "../../services/workout";
 import { getWeights } from "../../services/weight";
 import { getActivePlan } from "../../services/plan";
+import { getSessions } from "../../services/sessions";
 
 function todayIso(): string {
   const d = new Date();
@@ -38,6 +40,7 @@ export default function Home() {
   const [weight, setWeight] = useState<WeightEntry | null>(null);
   const [activePlan, setActivePlan] = useState<PlanDetail | null>(null);
   const [streak, setStreak] = useState(0);
+  const [sessions, setSessions] = useState<Session[]>([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -48,8 +51,31 @@ export default function Home() {
       getWeights().then((w) => setWeight(w.length ? w[w.length - 1] : null));
       getActivePlan().then(setActivePlan);
       getStreak().then(setStreak);
+      getSessions().then(setSessions);
     }, [])
   );
+
+  const pendingInvites = sessions.filter(
+    (s) => s.myStatus === "Pending"
+  ).length;
+  const nextSession =
+    sessions
+      .filter(
+        (s) =>
+          s.myStatus === "Accepted" &&
+          new Date(s.scheduledAt).getTime() > Date.now()
+      )
+      .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt))[0] ?? null;
+
+  function formatSessionShort(iso: string): string {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    return (
+      d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" }) +
+      " · " +
+      d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })
+    );
+  }
 
   const todayPlanDay =
     activePlan?.days.find((d) => d.dayOfWeek === todayDayOfWeek()) ?? null;
@@ -155,25 +181,79 @@ export default function Home() {
           ) : (
             <Text style={styles.trainingEmpty}>No workout logged yet today.</Text>
           )}
-          <Pressable
-            style={styles.cardButton}
-            onPress={() =>
-              todayPlanDay && !trainedToday
-                ? router.push({
-                    pathname: "/log-workout",
-                    params: { planDayId: String(todayPlanDay.id) },
-                  } as any)
-                : router.push("/log-workout" as any)
-            }
-          >
-            <Ionicons name="add" size={18} color={colors.bg} />
-            <Text style={styles.cardButtonText}>
-              {todayPlanDay && !trainedToday
-                ? `Start ${todayPlanDay.name}`
-                : "Log Workout"}
-            </Text>
-          </Pressable>
+          {trainedToday ? (
+            <Pressable
+              style={styles.cardButtonGhost}
+              onPress={() => router.push("/training" as any)}
+            >
+              <Text style={styles.cardButtonGhostText}>
+                View in Training tab
+              </Text>
+              <Ionicons name="chevron-forward" size={15} color={colors.muted} />
+            </Pressable>
+          ) : (
+            <Pressable
+              style={styles.cardButton}
+              onPress={() =>
+                todayPlanDay
+                  ? router.push({
+                      pathname: "/log-workout",
+                      params: { planDayId: String(todayPlanDay.id) },
+                    } as any)
+                  : router.push("/log-workout" as any)
+              }
+            >
+              <Ionicons name="add" size={18} color={colors.bg} />
+              <Text style={styles.cardButtonText}>
+                {todayPlanDay ? `Start ${todayPlanDay.name}` : "Log Workout"}
+              </Text>
+            </Pressable>
+          )}
         </AnimatedCard>
+
+        {(pendingInvites > 0 || nextSession) && (
+          <AnimatedCard delay={200} style={styles.card}>
+            <Pressable onPress={() => router.push("/sessions" as any)}>
+              <View style={styles.cardHeaderRow}>
+                <View style={styles.cardTitleRow}>
+                  <Ionicons name="calendar" size={18} color={colors.accent} />
+                  <Text style={styles.cardTitle}>Sessions</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+              </View>
+              {pendingInvites > 0 && (
+                <View style={styles.sessionRow}>
+                  <View style={styles.inviteBadge}>
+                    <Text style={styles.inviteBadgeText}>{pendingInvites}</Text>
+                  </View>
+                  <Text style={styles.sessionInviteText}>
+                    {pendingInvites === 1
+                      ? "New workout invite — tap to respond"
+                      : `${pendingInvites} workout invites — tap to respond`}
+                  </Text>
+                </View>
+              )}
+              {nextSession && (
+                <View style={styles.sessionRow}>
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={16}
+                    color={colors.accent}
+                  />
+                  <Text style={styles.sessionNextText} numberOfLines={1}>
+                    Next: {formatSessionShort(nextSession.scheduledAt)}{" "}
+                    {nextSession.isHost
+                      ? "· your session"
+                      : `with ${nextSession.hostName}`}
+                    {nextSession.locationName
+                      ? ` · 📍 ${nextSession.locationName}`
+                      : ""}
+                  </Text>
+                </View>
+              )}
+            </Pressable>
+          </AnimatedCard>
+        )}
 
         {}
         <AnimatedCard delay={240} style={styles.card}>
@@ -323,6 +403,29 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 12,
   },
+  sessionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 12,
+  },
+  inviteBadge: {
+    minWidth: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: colors.orange,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 5,
+  },
+  inviteBadgeText: { color: colors.bg, fontSize: 11, fontWeight: "800" },
+  sessionInviteText: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "600",
+    flex: 1,
+  },
+  sessionNextText: { color: colors.muted, fontSize: 13, flex: 1 },
   trainingDoneText: { color: colors.text, fontSize: 15, fontWeight: "600" },
   trainingEmpty: { color: colors.muted, fontSize: 14, marginTop: 12 },
   cardButton: {
@@ -336,6 +439,18 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   cardButtonText: { color: colors.bg, fontSize: 14, fontWeight: "700" },
+  cardButtonGhost: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    borderRadius: 11,
+    borderWidth: 1,
+    borderColor: colors.line,
+    paddingVertical: 11,
+    marginTop: 14,
+  },
+  cardButtonGhostText: { color: colors.muted, fontSize: 13, fontWeight: "600" },
   quickRow: { flexDirection: "row", gap: 12, marginTop: 16 },
   quickAction: {
     flex: 1,

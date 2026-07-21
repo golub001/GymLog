@@ -29,8 +29,8 @@ export default function Register() {
       return;
     }
 
-    if (result.token) {
-      await signIn(result.token, result.onboardingCompleted ?? false);
+    if (result.token && result.refreshToken) {
+      await signIn(result.token, result.refreshToken, result.onboardingCompleted ?? false);
     }
   }
 

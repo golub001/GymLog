@@ -146,7 +146,10 @@ export default function MuscleMap() {
           <Text style={styles.sectionLabel}>
             {hasPlan ? "Progress vs plan" : "This week"}
           </Text>
-          {GROUP_ORDER.map((group) => {
+          {(hasPlan
+            ? GROUP_ORDER.filter((g) => (statFor(g)?.targetSets ?? 0) > 0)
+            : GROUP_ORDER
+          ).map((group) => {
             const stat = statFor(group);
             const count = stat?.setCount ?? 0;
             const target = stat?.targetSets ?? 0;
@@ -180,6 +183,45 @@ export default function MuscleMap() {
               </View>
             );
           })}
+
+          {hasPlan &&
+            GROUP_ORDER.some(
+              (g) =>
+                (statFor(g)?.targetSets ?? 0) === 0 &&
+                (statFor(g)?.setCount ?? 0) > 0
+            ) && (
+              <>
+                <Text style={styles.sectionLabel}>Also trained</Text>
+                {GROUP_ORDER.filter(
+                  (g) =>
+                    (statFor(g)?.targetSets ?? 0) === 0 &&
+                    (statFor(g)?.setCount ?? 0) > 0
+                ).map((group) => {
+                  const stat = statFor(group);
+                  const count = stat?.setCount ?? 0;
+                  const intensity = stat ? intensityFor(stat) : 0;
+                  return (
+                    <View key={group} style={styles.statRow}>
+                      <View
+                        style={[
+                          styles.dot,
+                          {
+                            backgroundColor:
+                              intensity > 0
+                                ? INTENSITY_COLORS[intensity - 1]
+                                : colors.surface2,
+                          },
+                        ]}
+                      />
+                      <Text style={styles.statName}>{group}</Text>
+                      <Text style={styles.statCount}>
+                        {count} {count === 1 ? "set" : "sets"}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </>
+            )}
 
           {totalSets === 0 && (
             <Text style={styles.emptyText}>

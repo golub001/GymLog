@@ -121,8 +121,14 @@ export default function Training() {
         ) : workouts.length === 0 ? (
           <Text style={styles.emptyText}>No workout logged on this day.</Text>
         ) : (
-          workouts.map((w) => (
+          workouts.map((w, wi) => (
             <View key={w.id} style={styles.workoutCard}>
+              {workouts.length > 1 && (
+                <View style={styles.workoutHeader}>
+                  <Ionicons name="barbell" size={14} color={colors.accent} />
+                  <Text style={styles.workoutHeaderText}>Workout {wi + 1}</Text>
+                </View>
+              )}
               {w.notes ? <Text style={styles.notes}>{w.notes}</Text> : null}
               {w.exercises.map((ex) => (
                 <View key={ex.exerciseId} style={styles.exerciseBlock}>
@@ -228,6 +234,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontStyle: "italic",
     marginBottom: 12,
+  },
+  workoutHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 10,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+  },
+  workoutHeaderText: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   exerciseBlock: {
     marginBottom: 14,

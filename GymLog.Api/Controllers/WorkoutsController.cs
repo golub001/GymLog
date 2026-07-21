@@ -25,7 +25,7 @@ namespace GymLog.Api.Controllers
                 var result =await _workoutService.InsertNewWorkout(dto.WorkoutSets, userId, dto.Date, dto.Notes??"", dto.PlanDayId);
                 return Ok(new { workoutId = result });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, "Failed to save workout.");
             }

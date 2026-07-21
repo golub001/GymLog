@@ -1,4 +1,5 @@
 using GymLog.Api.Data;
+using GymLog.Api.Hubs;
 using GymLog.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -40,7 +41,24 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwt["Key"]!))
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    path.StartsWithSegments("/hubs/chat"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
+
+builder.Services.AddSignalR();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -53,7 +71,13 @@ builder.Services.AddScoped<IWorkoutService,WorkoutService>();
 builder.Services.AddScoped<IBodyWeightService, BodyWeightService>();
 builder.Services.AddScoped<INutritionService, NutritionService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
+builder.Services.AddScoped<IProgressPhotoService, ProgressPhotoService>();
+builder.Services.AddScoped<IFriendService, FriendService>();
+builder.Services.AddScoped<ISessionService, SessionService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddHttpClient<IPushService, ExpoPushService>();
 builder.Services.AddHttpClient<IAiPlanService, AiPlanService>();
+builder.Services.AddHttpClient<IModerationService, ModerationService>();
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -75,10 +99,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseStaticFiles();
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.Run();

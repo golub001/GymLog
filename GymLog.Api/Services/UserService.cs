@@ -65,6 +65,16 @@ namespace GymLog.Api.Services
             };
         }
 
+        public async Task<bool> SavePushToken(int userId, string token)
+        {
+            var user = await _database.Users.FindAsync(userId);
+            if (user == null) return false;
+
+            user.ExpoPushToken = token;
+            await _database.SaveChangesAsync();
+            return true;
+        }
+
         public int CalculateAge(DateOnly birthDate)
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);

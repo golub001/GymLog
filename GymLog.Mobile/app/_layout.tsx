@@ -17,7 +17,7 @@ function RootLayoutNav() {
   const inAuthGroup = segments[0] === "(auth)";
   const inOnboarding = segments[0] === "onboarding";
   const needsLogin = !token && !inAuthGroup;
-  const needsOnboarding = token && !onboardingDone && !inOnboarding;
+  const needsOnboarding = !!token && !onboardingDone && !inOnboarding;
 
   useEffect(() => {
     if (loading) return;

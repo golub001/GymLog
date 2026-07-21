@@ -9,5 +9,7 @@ namespace GymLog.Api.Services
         Task<bool> CompleteOnboardingAsync(int userId, OnboardingFinishDto dto);
 
         Task<UserProfileDto?> GetProfile(int userId);
+
+        Task<bool> SavePushToken(int userId, string token);
     }
 }

@@ -45,3 +45,16 @@ public enum PlanSource
     AI,
     Custom
 }
+
+public enum FriendshipStatus
+{
+    Pending,
+    Accepted
+}
+
+public enum SessionStatus
+{
+    Pending,
+    Accepted,
+    Declined
+}

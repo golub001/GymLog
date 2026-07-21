@@ -6,7 +6,7 @@ namespace GymLog.Api.DTOs
     {
         [Required]
         [MinLength(1)]
-        public List<WorkoutSetDto> WorkoutSets { get; set; }
+        public List<WorkoutSetDto> WorkoutSets { get; set; } = new();
         public string? Notes { get; set; }
 
         public DateOnly Date {  get; set; }

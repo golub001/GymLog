@@ -75,6 +75,20 @@ export default function Profile() {
         <Ionicons name="chevron-forward" size={20} color={colors.muted} />
       </Pressable>
 
+      <Pressable
+        style={styles.weightCard}
+        onPress={() => router.push("/progress-photos" as any)}
+      >
+        <View style={styles.weightIcon}>
+          <Ionicons name="camera-outline" size={22} color={colors.accent} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.weightLabel}>Progress Photos</Text>
+          <Text style={styles.weightValue}>Track your transformation</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={colors.muted} />
+      </Pressable>
+
       <View style={{ marginTop: 30 }}>
         <Button title="Log out" onPress={signOut} variant="ghost" />
       </View>
@@ -121,4 +135,14 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginRight: 6,
   },
+  requestBadge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.orange,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 6,
+  },
+  requestBadgeText: { color: colors.bg, fontSize: 12, fontWeight: "800" },
 });

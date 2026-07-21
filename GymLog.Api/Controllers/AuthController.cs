@@ -40,5 +40,26 @@ namespace GymLog.Api.Controllers
             }
             return Ok(result);
         }
+
+        [HttpPost]
+        [Route("refresh")]
+        public async Task<IActionResult> Refresh(RefreshRequestDto dto)
+        {
+            var result = await _service.RefreshAsync(dto.RefreshToken);
+
+            if (!result.Success)
+            {
+                return Unauthorized(result.Error);
+            }
+            return Ok(result);
+        }
+
+        [HttpPost]
+        [Route("logout")]
+        public async Task<IActionResult> Logout(RefreshRequestDto dto)
+        {
+            await _service.LogoutAsync(dto.RefreshToken);
+            return Ok();
+        }
     }
 }

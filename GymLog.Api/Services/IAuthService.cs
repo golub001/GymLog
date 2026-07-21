@@ -6,5 +6,7 @@ namespace GymLog.Api.Services
     {
         Task<AuthResult> RegisterAsync(RegisterDto dto);
         Task<AuthResult> LoginAsync(LoginDto dto);
+        Task<AuthResult> RefreshAsync(string refreshToken);
+        Task LogoutAsync(string refreshToken);
     }
 }

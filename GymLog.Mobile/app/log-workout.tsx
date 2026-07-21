@@ -73,6 +73,10 @@ export default function LogWorkout() {
     });
   }, []);
 
+  function defaultWeight(equipment: string | null): string {
+    return equipment === "Body weight" ? "0" : "";
+  }
+
   function applyDay(day: PlanDetail["days"][number]) {
     setEntries(
       day.exercises.map((pe) => ({
@@ -84,7 +88,7 @@ export default function LogWorkout() {
           imageUrl: pe.imageUrl,
         },
         sets: Array.from({ length: Math.max(pe.targetSets, 1) }, () => ({
-          weight: "",
+          weight: defaultWeight(pe.equipment),
           reps: String(pe.targetReps),
         })),
       }))
@@ -101,7 +105,7 @@ export default function LogWorkout() {
   function addExercise(exercise: ExerciseSearchItem) {
     setEntries((prev) => [
       ...prev,
-      { exercise, sets: [{ weight: "", reps: "" }] },
+      { exercise, sets: [{ weight: defaultWeight(exercise.equipment), reps: "" }] },
     ]);
     setPickerOpen(false);
   }
@@ -114,7 +118,13 @@ export default function LogWorkout() {
     setEntries((prev) =>
       prev.map((e, i) =>
         i === entryIndex
-          ? { ...e, sets: [...e.sets, { weight: "", reps: "" }] }
+          ? {
+              ...e,
+              sets: [
+                ...e.sets,
+                { weight: defaultWeight(e.exercise.equipment), reps: "" },
+              ],
+            }
           : e
       )
     );
@@ -159,9 +169,10 @@ export default function LogWorkout() {
     const workoutSets: WorkoutSetInput[] = [];
     for (const entry of entries) {
       for (const s of entry.sets) {
-        const w = parseFloat(s.weight.replace(",", "."));
+        const rawWeight = s.weight.trim();
+        const w = rawWeight === "" ? 0 : parseFloat(rawWeight.replace(",", "."));
         const r = parseInt(s.reps, 10);
-        if (isNaN(w) || w < 0.1 || w > 600) {
+        if (isNaN(w) || w < 0 || w > 600) {
           setError(`Check the weight for ${entry.exercise.name}.`);
           return;
         }

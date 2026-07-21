@@ -89,12 +89,26 @@ namespace GymLog.Api.Services
             {
                 mg = parsed;
             }
-            return await _database.Exercises.Where(u =>
+            var query = _database.Exercises.Where(u =>
                     (string.IsNullOrEmpty(pattern) || EF.Functions.ILike(u.Name, $"%{pattern}%")) &&
                     (mg == null || u.MuscleGroup == mg) &&
                     (string.IsNullOrEmpty(equpment) || u.Equipment == equpment)
-                )
-                .OrderBy(u=>u.Name)
+                );
+
+            if (!string.IsNullOrEmpty(pattern))
+            {
+                query = query
+                    .OrderByDescending(u => EF.Functions.ILike(u.Name, pattern))
+                    .ThenByDescending(u => EF.Functions.ILike(u.Name, $"{pattern}%"))
+                    .ThenBy(u => u.Name.Length)
+                    .ThenBy(u => u.Name);
+            }
+            else
+            {
+                query = query.OrderBy(u => u.Name);
+            }
+
+            return await query
                 .Take(20).Select(e => new ExerciseSearchItemDto
             {
                 Id = e.Id,
@@ -273,17 +287,25 @@ namespace GymLog.Api.Services
             if (trainingDows.Contains(Dow(today)) && !loggedDates.Contains(today))
                 day = today.AddDays(-1);
 
+            // rest days count only when anchored by an earlier logged workout,
+            // so days before the user's first workout never inflate the streak
+            int pendingRest = 0;
             int guard = 0;
             while (guard++ < 400)
             {
                 if (trainingDows.Contains(Dow(day)))
                 {
-                    if (loggedDates.Contains(day)) { streak++; day = day.AddDays(-1); }
+                    if (loggedDates.Contains(day))
+                    {
+                        streak += pendingRest + 1;
+                        pendingRest = 0;
+                        day = day.AddDays(-1);
+                    }
                     else break; // missed a training day -> streak ends
                 }
                 else
                 {
-                    streak++; // rest day counts
+                    pendingRest++;
                     day = day.AddDays(-1);
                 }
             }
