@@ -18,7 +18,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { ExerciseSearchItem, WorkoutSetInput } from "../dto/workout";
-import { searchExercises, insertWorkout } from "../services/workout";
+import {
+  searchExercises,
+  insertWorkout,
+  getLastWorkoutByPlanDay,
+} from "../services/workout";
 import { PlanDetail, weekdayName, todayDayOfWeek } from "../dto/plan";
 import { getActivePlan } from "../services/plan";
 
@@ -62,6 +66,7 @@ export default function LogWorkout() {
   const [activePlan, setActivePlan] = useState<PlanDetail | null>(null);
   const [planPickerOpen, setPlanPickerOpen] = useState(false);
   const [planDayId, setPlanDayId] = useState<number | null>(null);
+  const [prefilledFromLast, setPrefilledFromLast] = useState(false);
 
   useEffect(() => {
     getActivePlan().then((p) => {
@@ -77,24 +82,63 @@ export default function LogWorkout() {
     return equipment === "Body weight" ? "0" : "";
   }
 
-  function applyDay(day: PlanDetail["days"][number]) {
-    setEntries(
-      day.exercises.map((pe) => ({
-        exercise: {
-          id: pe.exerciseId,
-          name: pe.exerciseName,
-          muscleGroup: pe.muscleGroup,
-          equipment: pe.equipment,
-          imageUrl: pe.imageUrl,
-        },
-        sets: Array.from({ length: Math.max(pe.targetSets, 1) }, () => ({
-          weight: defaultWeight(pe.equipment),
-          reps: String(pe.targetReps),
-        })),
-      }))
-    );
-    setPlanDayId(day.id);
+  function fmtWeight(w: number): string {
+    return Number.isInteger(w) ? String(w) : String(w);
+  }
+
+  async function applyDay(day: PlanDetail["days"][number]) {
     setPlanPickerOpen(false);
+    setPlanDayId(day.id);
+
+    // pull the last time this exact plan day was logged (if any)
+    const last = await getLastWorkoutByPlanDay(day.id);
+    const prevByExercise = new Map<number, { weightKg: number; reps: number }[]>();
+    if (last) {
+      for (const ex of last.exercises) {
+        prevByExercise.set(
+          ex.exerciseId,
+          ex.sets.map((s) => ({ weightKg: s.weightKg, reps: s.reps }))
+        );
+      }
+    }
+
+    setEntries(
+      day.exercises.map((pe) => {
+        const prev = prevByExercise.get(pe.exerciseId);
+        if (prev && prev.length > 0) {
+          return {
+            exercise: {
+              id: pe.exerciseId,
+              name: pe.exerciseName,
+              muscleGroup: pe.muscleGroup,
+              equipment: pe.equipment,
+              imageUrl: pe.imageUrl,
+            },
+            sets: prev.map((s) => ({
+              weight:
+                s.weightKg > 0
+                  ? fmtWeight(s.weightKg)
+                  : defaultWeight(pe.equipment),
+              reps: String(s.reps),
+            })),
+          };
+        }
+        return {
+          exercise: {
+            id: pe.exerciseId,
+            name: pe.exerciseName,
+            muscleGroup: pe.muscleGroup,
+            equipment: pe.equipment,
+            imageUrl: pe.imageUrl,
+          },
+          sets: Array.from({ length: Math.max(pe.targetSets, 1) }, () => ({
+            weight: defaultWeight(pe.equipment),
+            reps: String(pe.targetReps),
+          })),
+        };
+      })
+    );
+    setPrefilledFromLast(last != null);
   }
 
   function loadPlanDay(dayId: number) {
@@ -297,6 +341,15 @@ export default function LogWorkout() {
               Logging from plan ·{" "}
               {activePlan?.days.find((d) => d.id === planDayId)?.name}
             </Text>
+          )}
+
+          {prefilledFromLast && (
+            <View style={styles.prefillNote}>
+              <Ionicons name="repeat" size={14} color={colors.accent} />
+              <Text style={styles.prefillNoteText}>
+                Weights & reps carried over from your last session — beat them!
+              </Text>
+            </View>
           )}
 
           {entries.map((entry, ei) => (
@@ -605,7 +658,7 @@ const styles = StyleSheet.create({
   dateChip: {
     paddingHorizontal: 14,
     paddingVertical: 9,
-    borderRadius: 10,
+    borderRadius: 999,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.line,
@@ -620,15 +673,16 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   dateChipTextActive: {
-    color: colors.bg,
+    color: colors.accentText,
+    fontWeight: "700",
   },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 14,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.line,
-    padding: 14,
-    marginTop: 16,
+    padding: 16,
+    marginTop: 14,
   },
   cardHeader: {
     flexDirection: "row",
@@ -684,8 +738,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface2,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 10,
-    paddingVertical: 9,
+    borderRadius: 12,
+    paddingVertical: 10,
     paddingHorizontal: 10,
     fontSize: 14,
     color: colors.text,
@@ -714,23 +768,23 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 6,
     backgroundColor: colors.accent,
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: 14,
+    paddingVertical: 15,
     marginTop: 20,
   },
   addExerciseText: {
-    color: colors.bg,
+    color: colors.accentText,
     fontSize: 14,
     fontWeight: "700",
   },
   notesInput: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surface2,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 11,
-    paddingHorizontal: 13,
+    borderRadius: 14,
+    paddingHorizontal: 14,
     paddingVertical: 12,
-    fontSize: 13,
+    fontSize: 14,
     color: colors.text,
     minHeight: 70,
     textAlignVertical: "top",
@@ -745,11 +799,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.accentDim,
     borderWidth: 1,
     borderColor: colors.accent,
-    borderRadius: 12,
-    padding: 14,
+    borderRadius: 16,
+    padding: 15,
     marginTop: 16,
   },
   planBannerTitle: { color: colors.text, fontSize: 15, fontWeight: "700" },
@@ -759,6 +813,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     marginTop: 16,
+  },
+  prefillNote: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    backgroundColor: colors.accentDim,
+    borderRadius: 12,
+    padding: 11,
+    marginTop: 10,
+  },
+  prefillNoteText: {
+    color: colors.text,
+    fontSize: 12,
+    fontWeight: "600",
+    flex: 1,
   },
   modalBackdrop: {
     flex: 1,
@@ -791,11 +860,11 @@ const styles = StyleSheet.create({
     gap: 8,
     marginHorizontal: 18,
     marginVertical: 14,
-    paddingHorizontal: 13,
-    backgroundColor: colors.surface,
+    paddingHorizontal: 14,
+    backgroundColor: colors.surface2,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 11,
+    borderRadius: 14,
   },
   searchInput: {
     flex: 1,

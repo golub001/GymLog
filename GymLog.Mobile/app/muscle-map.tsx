@@ -102,6 +102,19 @@ export default function MuscleMap() {
             {hasPlan ? " · vs plan target" : ""}
           </Text>
 
+          {!hasPlan && (
+            <Pressable
+              style={styles.planHint}
+              onPress={() => router.push("/plan-finder" as any)}
+            >
+              <Ionicons name="bulb-outline" size={15} color={colors.accent} />
+              <Text style={styles.planHintText}>
+                Showing raw weekly volume. Choose a plan to track progress vs
+                weekly targets.
+              </Text>
+            </Pressable>
+          )}
+
           <View style={styles.toggleRow}>
             <Pressable
               style={[styles.toggle, side === "front" && styles.toggleActive]}
@@ -252,10 +265,27 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginBottom: 16,
   },
+  planHint: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: colors.accentDim,
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 16,
+    marginTop: -4,
+  },
+  planHintText: {
+    color: colors.text,
+    fontSize: 12,
+    fontWeight: "500",
+    flex: 1,
+    lineHeight: 17,
+  },
   toggleRow: {
     flexDirection: "row",
     backgroundColor: colors.surface,
-    borderRadius: 10,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.line,
     padding: 4,
@@ -263,13 +293,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   toggle: {
-    paddingVertical: 8,
+    paddingVertical: 9,
     paddingHorizontal: 26,
-    borderRadius: 7,
+    borderRadius: 10,
   },
   toggleActive: { backgroundColor: colors.accent },
   toggleText: { color: colors.muted, fontSize: 13, fontWeight: "600" },
-  toggleTextActive: { color: colors.bg },
+  toggleTextActive: { color: colors.accentText, fontWeight: "700" },
   bodyWrap: {
     alignItems: "center",
     justifyContent: "center",

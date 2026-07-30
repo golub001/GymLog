@@ -2,6 +2,7 @@ import { api } from "./api";
 import {
   DiaryDay,
   FoodSearchItem,
+  NewFood,
   MealType,
   UserProfile,
   NutritionSummary,
@@ -30,6 +31,36 @@ export async function searchFoods(
     return response.data;
   } catch {
     return [];
+  }
+}
+
+export async function createFood(
+  food: NewFood
+): Promise<{ ok: boolean; food?: FoodSearchItem; error?: string }> {
+  try {
+    const response = await api.post<FoodSearchItem>("/nutrition/foods", food);
+    return { ok: true, food: response.data };
+  } catch (err: any) {
+    const message =
+      typeof err?.response?.data === "string" && err.response.data.length > 0
+        ? err.response.data
+        : "Could not create food.";
+    return { ok: false, error: message };
+  }
+}
+
+export async function deleteFood(
+  foodId: number
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await api.delete(`/nutrition/foods/${foodId}`);
+    return { ok: true };
+  } catch (err: any) {
+    const message =
+      typeof err?.response?.data === "string" && err.response.data.length > 0
+        ? err.response.data
+        : "Could not delete food.";
+    return { ok: false, error: message };
   }
 }
 

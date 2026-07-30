@@ -129,6 +129,9 @@ namespace GymLog.Api.Migrations
                     b.Property<decimal>("CarbsPer100g")
                         .HasColumnType("numeric(6,2)");
 
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("integer");
+
                     b.Property<decimal>("FatPer100g")
                         .HasColumnType("numeric(6,2)");
 
@@ -462,6 +465,10 @@ namespace GymLog.Api.Migrations
                     b.Property<string>("ActivityLevel")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<string>("AvatarFileName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<DateOnly?>("BirthDate")
                         .HasColumnType("date");

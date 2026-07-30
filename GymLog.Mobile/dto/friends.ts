@@ -3,6 +3,7 @@ export type Friend = {
   userId: number;
   name: string;
   email: string;
+  avatarUrl: string | null;
 };
 
 export type FriendRequest = {
@@ -10,6 +11,7 @@ export type FriendRequest = {
   userId: number;
   name: string;
   email: string;
+  avatarUrl: string | null;
   createdAt: string;
 };
 
@@ -23,6 +25,7 @@ export type UserSearchResult = {
   userId: number;
   name: string;
   email: string;
+  avatarUrl: string | null;
   status: FriendSearchStatus;
   friendshipId: number | null;
 };

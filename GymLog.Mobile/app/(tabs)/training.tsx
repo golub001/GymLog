@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -35,6 +35,12 @@ export default function Training() {
   const [workouts, setWorkouts] = useState<WorkoutDetail[]>([]);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
+  // keep current values readable inside the focus effect without re-running it
+  const visibleMonthRef = useRef(visibleMonth);
+  visibleMonthRef.current = visibleMonth;
+  const selectedRef = useRef(selected);
+  selectedRef.current = selected;
+
   const loadActiveDays = useCallback(
     async (year: number, month: number) => {
       const days = await getActiveDays(year, month);
@@ -50,11 +56,12 @@ export default function Training() {
     setLoadingDetail(false);
   }, []);
 
+  // runs only when the screen (re)gains focus — not on month/day changes
   useFocusEffect(
     useCallback(() => {
-      loadActiveDays(visibleMonth.year, visibleMonth.month);
-      loadWorkouts(selected);
-    }, [visibleMonth, selected, loadActiveDays, loadWorkouts])
+      loadActiveDays(visibleMonthRef.current.year, visibleMonthRef.current.month);
+      loadWorkouts(selectedRef.current);
+    }, [loadActiveDays, loadWorkouts])
   );
 
   function handleDayPress(day: DateData) {
@@ -186,23 +193,23 @@ const styles = StyleSheet.create({
   logBtn: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 5,
     backgroundColor: colors.accent,
-    borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    borderRadius: 999,
+    paddingVertical: 9,
+    paddingHorizontal: 16,
   },
   logBtnText: {
-    color: colors.bg,
+    color: colors.accentText,
     fontSize: 14,
     fontWeight: "700",
   },
   content: {
     padding: 18,
-    paddingBottom: 60,
+    paddingBottom: 36,
   },
   calendar: {
-    borderRadius: 14,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.line,
     overflow: "hidden",
@@ -223,10 +230,10 @@ const styles = StyleSheet.create({
   },
   workoutCard: {
     backgroundColor: colors.surface,
-    borderRadius: 14,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.line,
-    padding: 14,
+    padding: 16,
     marginBottom: 14,
   },
   notes: {

@@ -51,6 +51,9 @@ namespace GymLog.Api.Controllers
             if (!file.ContentType.StartsWith("image/"))
                 return BadRequest("Only image files are allowed.");
 
+            if (await _service.HasPhotoOnDate(UserId, form.TakenAt))
+                return Conflict("You already added a progress photo for this day.");
+
             var moderation = await _moderation.CheckImage(file);
             if (!moderation.ServiceAvailable)
                 return StatusCode(503, moderation.Reason ?? "Moderation service is unavailable.");

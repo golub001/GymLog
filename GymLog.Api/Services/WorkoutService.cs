@@ -81,6 +81,43 @@ namespace GymLog.Api.Services
             }).ToList();
         }
 
+        public async Task<WorkoutDetailDto?> GetLastWorkoutByPlanDay(int userId, int planDayId)
+        {
+            var workout = await _database.Workouts
+                .Where(w => w.UserId == userId && w.PlanDayId == planDayId)
+                .Include(w => w.Sets)
+                    .ThenInclude(s => s.Exercise)
+                .OrderByDescending(w => w.Date)
+                .ThenByDescending(w => w.Id)
+                .FirstOrDefaultAsync();
+
+            if (workout == null) return null;
+
+            return new WorkoutDetailDto
+            {
+                Id = workout.Id,
+                Date = workout.Date,
+                Notes = workout.Notes,
+                Exercises = workout.Sets
+                    .GroupBy(s => s.ExerciseId)
+                    .Select(g => new ExerciseBlockDto
+                    {
+                        ExerciseId = g.Key,
+                        ExerciseName = g.First().Exercise.Name,
+                        MuscleGroup = g.First().Exercise.MuscleGroup.ToString(),
+                        Sets = g.OrderBy(s => s.SetOrder)
+                            .Select(s => new SetDto
+                            {
+                                SetOrder = s.SetOrder,
+                                WeightKg = s.WeightKg,
+                                Reps = s.Reps
+                            })
+                            .ToList()
+                    })
+                    .ToList()
+            };
+        }
+
         public async Task<List<ExerciseSearchItemDto>> SearchExercises(string pattern,string muscleGroup,string equpment)
         {
             MuscleGroup? mg=null;

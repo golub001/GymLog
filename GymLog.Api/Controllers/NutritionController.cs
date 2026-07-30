@@ -22,7 +22,27 @@ namespace GymLog.Api.Controllers
         [HttpGet("foods")]
         public async Task<IActionResult> SearchFoods([FromQuery] string search)
         {
-            return Ok(await _nutritionService.SearchFoods(search ?? ""));
+            return Ok(await _nutritionService.SearchFoods(UserId, search ?? ""));
+        }
+
+        [HttpPost("foods")]
+        public async Task<IActionResult> CreateFood(NewFoodDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Name))
+                return BadRequest("Name is required.");
+            if (dto.KcalPer100g <= 0)
+                return BadRequest("Calories must be greater than zero.");
+
+            var food = await _nutritionService.CreateFood(UserId, dto);
+            return Ok(food);
+        }
+
+        [HttpDelete("foods/{foodId}")]
+        public async Task<IActionResult> DeleteFood(int foodId)
+        {
+            var (ok, error) = await _nutritionService.DeleteFood(UserId, foodId);
+            if (!ok) return BadRequest(error);
+            return NoContent();
         }
 
         [HttpPost("diary")]

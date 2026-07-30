@@ -13,13 +13,16 @@ namespace GymLog.Api.Services
             _database = database;
         }
 
-        public async Task<List<FoodSearchItemDto>> SearchFoods(string pattern)
+        public async Task<List<FoodSearchItemDto>> SearchFoods(int userId, string pattern)
         {
             var p = (pattern ?? "").ToLower();
             return await _database.Foods
-                .Where(f => EF.Functions.ILike(f.Name, $"%{p}%"))
-                // names starting with the term first, then shortest (most basic) first
-                .OrderByDescending(f => EF.Functions.ILike(f.Name, $"{p}%"))
+                .Where(f =>
+                    (f.CreatedByUserId == null || f.CreatedByUserId == userId) &&
+                    EF.Functions.ILike(f.Name, $"%{p}%"))
+                // own custom foods first, then names starting with the term, then shortest
+                .OrderByDescending(f => f.CreatedByUserId == userId)
+                .ThenByDescending(f => EF.Functions.ILike(f.Name, $"{p}%"))
                 .ThenBy(f => f.Name.Length)
                 .Take(20)
                 .Select(f => new FoodSearchItemDto
@@ -29,9 +32,51 @@ namespace GymLog.Api.Services
                     KcalPer100g = f.KcalPer100g,
                     ProteinPer100g = f.ProteinPer100g,
                     CarbsPer100g = f.CarbsPer100g,
-                    FatPer100g = f.FatPer100g
+                    FatPer100g = f.FatPer100g,
+                    IsCustom = f.CreatedByUserId != null
                 })
                 .ToListAsync();
+        }
+
+        public async Task<FoodSearchItemDto> CreateFood(int userId, NewFoodDto dto)
+        {
+            var food = new Food
+            {
+                Name = dto.Name.Trim(),
+                KcalPer100g = dto.KcalPer100g,
+                ProteinPer100g = dto.ProteinPer100g,
+                CarbsPer100g = dto.CarbsPer100g,
+                FatPer100g = dto.FatPer100g,
+                CreatedByUserId = userId
+            };
+
+            await _database.Foods.AddAsync(food);
+            await _database.SaveChangesAsync();
+
+            return new FoodSearchItemDto
+            {
+                Id = food.Id,
+                Name = food.Name,
+                KcalPer100g = food.KcalPer100g,
+                ProteinPer100g = food.ProteinPer100g,
+                CarbsPer100g = food.CarbsPer100g,
+                FatPer100g = food.FatPer100g,
+                IsCustom = true
+            };
+        }
+
+        public async Task<(bool Ok, string? Error)> DeleteFood(int userId, int foodId)
+        {
+            var food = await _database.Foods
+                .FirstOrDefaultAsync(f => f.Id == foodId && f.CreatedByUserId == userId);
+            if (food == null) return (false, "Custom food not found.");
+
+            if (await _database.DiaryEntries.AnyAsync(e => e.FoodId == foodId))
+                return (false, "This food is used in your diary and can't be deleted.");
+
+            _database.Foods.Remove(food);
+            await _database.SaveChangesAsync();
+            return (true, null);
         }
 
         public async Task<int> InsertDiaryEntry(int userId, int foodId, DateOnly date, MealType mealType, decimal grams)

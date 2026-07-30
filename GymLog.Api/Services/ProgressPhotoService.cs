@@ -56,6 +56,12 @@ namespace GymLog.Api.Services
             };
         }
 
+        public async Task<bool> HasPhotoOnDate(int userId, DateOnly date)
+        {
+            return await _database.ProgressPhotos
+                .AnyAsync(p => p.UserId == userId && p.TakenAt == date);
+        }
+
         public async Task<List<ProgressPhotoDto>> GetAll(int userId)
         {
             return await _database.ProgressPhotos

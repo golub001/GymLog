@@ -24,4 +24,7 @@ public class Food
 
     [Column(TypeName = "numeric(6,2)")]
     public decimal FatPer100g { get; set; }
+
+    // null = shared USDA catalog; otherwise the user who created this custom food
+    public int? CreatedByUserId { get; set; }
 }

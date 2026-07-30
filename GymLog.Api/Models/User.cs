@@ -43,6 +43,9 @@ public class User
     [MaxLength(100)]
     public string? ExpoPushToken { get; set; }
 
+    [MaxLength(255)]
+    public string? AvatarFileName { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<Workout> Workouts { get; set; } = new List<Workout>();

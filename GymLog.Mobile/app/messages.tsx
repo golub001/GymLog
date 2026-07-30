@@ -14,6 +14,7 @@ import { colors } from "../theme/colors";
 import { Conversation } from "../dto/messages";
 import { getConversations, onMessage } from "../services/chat";
 import { useEmbedded } from "../components/embedded";
+import Avatar from "../components/Avatar";
 
 function formatWhen(iso: string): string {
   const d = new Date(iso);
@@ -86,15 +87,13 @@ export default function MessagesScreen() {
                   params: {
                     friendUserId: String(c.friendUserId),
                     friendName: c.friendName,
+                    friendAvatar: c.friendAvatarUrl ?? "",
                   },
                 } as any)
               }
             >
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>
-                  {c.friendName.charAt(0).toUpperCase()}
-                </Text>
-              </View>
+              <Avatar name={c.friendName} avatarUrl={c.friendAvatarUrl} size={46} />
+
               <View style={{ flex: 1 }}>
                 <Text style={styles.rowName}>{c.friendName}</Text>
                 <Text
@@ -142,7 +141,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginHorizontal: 8,
   },
-  content: { padding: 18, paddingBottom: 50 },
+  content: { padding: 18, paddingBottom: 36 },
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -150,15 +149,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 13,
-    marginBottom: 8,
+    marginBottom: 9,
   },
   avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.surface2,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: colors.accentDim,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -177,7 +176,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 5,
   },
-  unreadText: { color: colors.bg, fontSize: 11, fontWeight: "800" },
+  unreadText: { color: colors.accentText, fontSize: 11, fontWeight: "800" },
   emptyWrap: {
     flex: 1,
     alignItems: "center",

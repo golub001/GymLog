@@ -172,6 +172,38 @@ public static class PlanSeeder
         new Ex("hanging leg raise", 3, 15),
     });
 
+    private static readonly DayDef StrengthA = new("Workout A", new[]
+    {
+        new Ex("barbell full squat", 5, 5),
+        new Ex("barbell bench press", 5, 5),
+        new Ex("barbell bent over row", 5, 5),
+    });
+
+    private static readonly DayDef StrengthB = new("Workout B", new[]
+    {
+        new Ex("barbell full squat", 5, 5),
+        new Ex("barbell seated overhead press", 5, 5),
+        new Ex("barbell deadlift", 1, 5),
+    });
+
+    private static readonly DayDef DumbA = new("Full Body A", new[]
+    {
+        new Ex("dumbbell goblet squat", 3, 12),
+        new Ex("dumbbell bench press", 3, 10),
+        new Ex("dumbbell bent over row", 3, 10),
+        new Ex("dumbbell standing overhead press", 3, 10),
+        new Ex("dumbbell romanian deadlift", 3, 12),
+    });
+
+    private static readonly DayDef DumbB = new("Full Body B", new[]
+    {
+        new Ex("dumbbell lunge", 3, 12),
+        new Ex("dumbbell incline bench press", 3, 10),
+        new Ex("dumbbell bent over row", 3, 10),
+        new Ex("dumbbell standing overhead press", 3, 10),
+        new Ex("dumbbell rear fly", 3, 15),
+    });
+
     private static readonly PresetDef[] Presets =
     {
         new("Full Body", "3 days/week (Mon/Wed/Fri). Great for beginners and general fitness.",
@@ -188,6 +220,10 @@ public static class PlanSeeder
             new[] { (GluteA, 1), (UpperW, 3), (GluteB, 5) }),
         new("Home Bodyweight", "3 days/week (Mon/Wed/Fri). No equipment needed — bodyweight + cardio.",
             new[] { (HomeA, 1), (HomeB, 3), (HomeC, 5) }),
+        new("Strength 5×5", "3 days/week (Mon/Wed/Fri). Heavy compound barbell lifts for raw strength.",
+            new[] { (StrengthA, 1), (StrengthB, 3), (StrengthA, 5) }),
+        new("Dumbbell Only", "3 days/week (Mon/Wed/Fri). Full-body routine using just a pair of dumbbells.",
+            new[] { (DumbA, 1), (DumbB, 3), (DumbA, 5) }),
     };
 
     public static async Task SeedPlansAsync(AppDbContext db)

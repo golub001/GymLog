@@ -62,8 +62,8 @@ export default function Register() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg, padding: 24, justifyContent: "center" },
-  logo: { fontSize: 34, fontWeight: "800", color: colors.text, textAlign: "center" },
-  subtitle: { fontSize: 13, color: colors.muted, textAlign: "center", marginTop: 6 },
+  logo: { fontSize: 40, fontWeight: "900", letterSpacing: -1, color: colors.text, textAlign: "center" },
+  subtitle: { fontSize: 14, color: colors.muted, textAlign: "center", marginTop: 8 },
   form: { marginTop: 40 },
   errorText: { color: colors.danger, fontSize: 13, textAlign: "center", marginBottom: 10 },
   link: { color: colors.muted, textAlign: "center", marginTop: 16, fontSize: 12 },

@@ -66,6 +66,15 @@ namespace GymLog.Api.Controllers
             return Ok(await _workoutService.GetWorkoutsByDate(userId, date));
         }
 
+        [HttpGet("last-by-plan-day/{planDayId}")]
+        public async Task<IActionResult> GetLastByPlanDay(int planDayId)
+        {
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var last = await _workoutService.GetLastWorkoutByPlanDay(userId, planDayId);
+            if (last == null) return NoContent();
+            return Ok(last);
+        }
+
         [HttpGet("streak")]
         public async Task<IActionResult> GetStreak()
         {

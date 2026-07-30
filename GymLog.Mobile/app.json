@@ -37,6 +37,13 @@
           "color": "#C4F82A",
           "defaultChannel": "default"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow GymLog to access your photos to add progress pictures.",
+          "cameraPermission": "Allow GymLog to use the camera to take progress pictures."
+        }
       ]
     ],
     "android": {

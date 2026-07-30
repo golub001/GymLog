@@ -11,6 +11,26 @@ namespace GymLog.Api.DTOs
         public decimal ProteinPer100g { get; set; }
         public decimal CarbsPer100g { get; set; }
         public decimal FatPer100g { get; set; }
+        public bool IsCustom { get; set; }
+    }
+
+    public class NewFoodDto
+    {
+        [Required]
+        [MaxLength(200)]
+        public string Name { get; set; } = "";
+
+        [Range(0, 900)]
+        public decimal KcalPer100g { get; set; }
+
+        [Range(0, 100)]
+        public decimal ProteinPer100g { get; set; }
+
+        [Range(0, 100)]
+        public decimal CarbsPer100g { get; set; }
+
+        [Range(0, 100)]
+        public decimal FatPer100g { get; set; }
     }
 
     public class NewDiaryEntryDto

@@ -24,6 +24,7 @@ import {
   startChatConnection,
   setActiveChatFriend,
 } from "../services/chat";
+import Avatar from "../components/Avatar";
 
 function formatTime(iso: string): string {
   const d = new Date(iso);
@@ -33,9 +34,10 @@ function formatTime(iso: string): string {
 
 export default function ChatScreen() {
   const router = useRouter();
-  const { friendUserId, friendName } = useLocalSearchParams<{
+  const { friendUserId, friendName, friendAvatar } = useLocalSearchParams<{
     friendUserId: string;
     friendName: string;
+    friendAvatar?: string;
   }>();
   const friendId = parseInt(String(friendUserId), 10);
 
@@ -90,11 +92,11 @@ export default function ChatScreen() {
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
         <View style={styles.headerCenter}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {(friendName ?? "?").charAt(0).toUpperCase()}
-            </Text>
-          </View>
+          <Avatar
+            name={friendName ?? "?"}
+            avatarUrl={friendAvatar || null}
+            size={30}
+          />
           <Text style={styles.headerTitle} numberOfLines={1}>
             {friendName ?? "Chat"}
           </Text>
@@ -202,7 +204,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: colors.surface2,
+    backgroundColor: colors.accentDim,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -214,11 +216,11 @@ const styles = StyleSheet.create({
   bubbleRowTheirs: { justifyContent: "flex-start" },
   bubble: {
     maxWidth: "78%",
-    borderRadius: 16,
-    paddingHorizontal: 13,
-    paddingVertical: 9,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
   },
-  bubbleMine: { backgroundColor: colors.accent, borderBottomRightRadius: 4 },
+  bubbleMine: { backgroundColor: colors.accent, borderBottomRightRadius: 5 },
   bubbleTheirs: {
     backgroundColor: colors.surface,
     borderWidth: 1,
@@ -226,7 +228,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
   },
   bubbleText: { color: colors.text, fontSize: 14, lineHeight: 19 },
-  bubbleTextMine: { color: colors.bg },
+  bubbleTextMine: { color: colors.accentText },
   bubbleTime: {
     color: colors.muted,
     fontSize: 10,
@@ -250,21 +252,21 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surface2,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingTop: 10,
-    paddingBottom: 10,
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    paddingTop: 11,
+    paddingBottom: 11,
     color: colors.text,
     fontSize: 14,
     maxHeight: 110,
   },
   sendBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: colors.accent,
     alignItems: "center",
     justifyContent: "center",

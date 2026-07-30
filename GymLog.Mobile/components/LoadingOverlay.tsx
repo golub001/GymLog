@@ -50,8 +50,9 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   logo: {
-    fontSize: 38,
-    fontWeight: "800",
+    fontSize: 40,
+    fontWeight: "900",
+    letterSpacing: -1,
     color: colors.text,
   },
 });

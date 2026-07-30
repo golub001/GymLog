@@ -5,6 +5,7 @@ import { useRouter, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../theme/colors";
 import AnimatedCard from "../../components/AnimatedCard";
+import Ring from "../../components/Ring";
 import { UserProfile, DiaryDay } from "../../dto/nutrition";
 import { WorkoutDetail } from "../../dto/workout";
 import { WeightEntry } from "../../dto/weight";
@@ -123,30 +124,31 @@ export default function Home() {
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.muted} />
             </View>
-            <View style={styles.calorieRow}>
-              <Text style={styles.bigNumber}>{consumed}</Text>
-              <Text style={styles.bigUnit}>
-                {calorieGoal > 0 ? `/ ${calorieGoal} kcal` : "kcal"}
-              </Text>
+            <View style={styles.calorieBody}>
+              <View style={{ flex: 1 }}>
+                <View style={styles.calorieRow}>
+                  <Text style={styles.bigNumber}>{consumed}</Text>
+                  <Text style={styles.bigUnit}>
+                    {calorieGoal > 0 ? `/ ${calorieGoal} kcal` : "kcal"}
+                  </Text>
+                </View>
+                {calorieGoal > 0 && (
+                  <Text style={styles.cardFootnote}>
+                    {over
+                      ? `${consumed - calorieGoal} kcal over goal`
+                      : `${remaining} kcal left`}
+                  </Text>
+                )}
+              </View>
+              <Ring
+                size={82}
+                stroke={9}
+                progress={caloriePct / 100}
+                color={over ? colors.orange : colors.accent}
+              >
+                <Text style={styles.ringPct}>{Math.round(caloriePct)}%</Text>
+              </Ring>
             </View>
-            <View style={styles.track}>
-              <View
-                style={[
-                  styles.fill,
-                  {
-                    width: `${caloriePct}%`,
-                    backgroundColor: over ? colors.orange : colors.accent,
-                  },
-                ]}
-              />
-            </View>
-            {calorieGoal > 0 && (
-              <Text style={styles.cardFootnote}>
-                {over
-                  ? `${consumed - calorieGoal} kcal over goal`
-                  : `${remaining} kcal left`}
-              </Text>
-            )}
           </Pressable>
         </AnimatedCard>
 
@@ -159,55 +161,91 @@ export default function Home() {
             </View>
           </View>
           {trainedToday ? (
-            <View style={styles.trainingDone}>
-              <Ionicons
-                name="checkmark-circle"
-                size={22}
-                color={colors.accent}
-              />
-              <Text style={styles.trainingDoneText}>
-                Workout logged · {totalSets} sets
+            <>
+              <View style={styles.trainingDone}>
+                <Ionicons
+                  name="checkmark-circle"
+                  size={22}
+                  color={colors.accent}
+                />
+                <Text style={styles.trainingDoneText}>
+                  Workout logged · {totalSets} sets
+                </Text>
+              </View>
+              <Pressable
+                style={styles.cardButtonGhost}
+                onPress={() => router.push("/training" as any)}
+              >
+                <Text style={styles.cardButtonGhostText}>
+                  View in Training tab
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={15}
+                  color={colors.muted}
+                />
+              </Pressable>
+            </>
+          ) : !activePlan ? (
+            <>
+              <Text style={styles.trainingEmpty}>
+                No active plan yet — a plan powers your daily workouts, streak
+                and muscle map.
               </Text>
-            </View>
+              <Pressable
+                style={styles.cardButton}
+                onPress={() => router.push("/plan-finder" as any)}
+              >
+                <Ionicons
+                  name="clipboard"
+                  size={17}
+                  color={colors.accentText}
+                />
+                <Text style={styles.cardButtonText}>Choose a plan</Text>
+              </Pressable>
+              <Pressable
+                style={styles.logLink}
+                onPress={() => router.push("/log-workout" as any)}
+              >
+                <Text style={styles.logLinkText}>or log a workout</Text>
+              </Pressable>
+            </>
           ) : todayPlanDay ? (
-            <Text style={styles.trainingEmpty}>
-              Today's plan:{" "}
-              <Text style={{ color: colors.text, fontWeight: "700" }}>
-                {todayPlanDay.name}
+            <>
+              <Text style={styles.trainingEmpty}>
+                Today's plan:{" "}
+                <Text style={{ color: colors.text, fontWeight: "700" }}>
+                  {todayPlanDay.name}
+                </Text>
               </Text>
-            </Text>
-          ) : activePlan ? (
-            <Text style={styles.trainingEmpty}>Rest day — no workout planned.</Text>
+              <Pressable
+                style={styles.cardButton}
+                onPress={() =>
+                  router.push({
+                    pathname: "/log-workout",
+                    params: { planDayId: String(todayPlanDay.id) },
+                  } as any)
+                }
+              >
+                <Ionicons name="add" size={18} color={colors.accentText} />
+                <Text style={styles.cardButtonText}>
+                  Start {todayPlanDay.name}
+                </Text>
+              </Pressable>
+            </>
           ) : (
-            <Text style={styles.trainingEmpty}>No workout logged yet today.</Text>
-          )}
-          {trainedToday ? (
-            <Pressable
-              style={styles.cardButtonGhost}
-              onPress={() => router.push("/training" as any)}
-            >
-              <Text style={styles.cardButtonGhostText}>
-                View in Training tab
+            <>
+              <Text style={styles.trainingEmpty}>
+                Rest day — no workout planned.
               </Text>
-              <Ionicons name="chevron-forward" size={15} color={colors.muted} />
-            </Pressable>
-          ) : (
-            <Pressable
-              style={styles.cardButton}
-              onPress={() =>
-                todayPlanDay
-                  ? router.push({
-                      pathname: "/log-workout",
-                      params: { planDayId: String(todayPlanDay.id) },
-                    } as any)
-                  : router.push("/log-workout" as any)
-              }
-            >
-              <Ionicons name="add" size={18} color={colors.bg} />
-              <Text style={styles.cardButtonText}>
-                {todayPlanDay ? `Start ${todayPlanDay.name}` : "Log Workout"}
-              </Text>
-            </Pressable>
+              <Pressable
+                style={styles.cardButton}
+                onPress={() => router.push("/log-workout" as any)}
+              >
+                <Ionicons name="add" size={18} color={colors.accentText} />
+                <Text style={styles.cardButtonText}>Log Workout</Text>
+              </Pressable>
+            </>
           )}
         </AnimatedCard>
 
@@ -343,29 +381,32 @@ function QuickAction({
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 18, paddingBottom: 40 },
+  content: { padding: 18, paddingBottom: 36 },
   greetingRow: { flexDirection: "row", alignItems: "center" },
-  greeting: { color: colors.text, fontSize: 26, fontWeight: "800" },
+  greeting: {
+    color: colors.text,
+    fontSize: 28,
+    fontWeight: "800",
+    letterSpacing: -0.6,
+  },
   subGreeting: { color: colors.muted, fontSize: 14, marginTop: 4 },
   streakBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.orange,
-    borderRadius: 20,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    gap: 5,
+    backgroundColor: colors.orangeDim,
+    borderRadius: 999,
+    paddingVertical: 7,
+    paddingHorizontal: 13,
   },
-  streakNum: { color: colors.text, fontSize: 16, fontWeight: "800" },
+  streakNum: { color: colors.orange, fontSize: 16, fontWeight: "800" },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.line,
-    padding: 16,
-    marginTop: 16,
+    padding: 18,
+    marginTop: 14,
   },
   cardHeaderRow: {
     flexDirection: "row",
@@ -380,22 +421,25 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
+  calorieBody: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    marginTop: 10,
+  },
   calorieRow: {
     flexDirection: "row",
     alignItems: "flex-end",
     gap: 8,
-    marginTop: 12,
   },
-  bigNumber: { color: colors.text, fontSize: 30, fontWeight: "800" },
+  bigNumber: {
+    color: colors.text,
+    fontSize: 32,
+    fontWeight: "800",
+    letterSpacing: -0.8,
+  },
   bigUnit: { color: colors.muted, fontSize: 15, fontWeight: "600" },
-  track: {
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.surface2,
-    overflow: "hidden",
-    marginTop: 12,
-  },
-  fill: { height: 8, borderRadius: 4 },
+  ringPct: { color: colors.text, fontSize: 16, fontWeight: "800" },
   cardFootnote: { color: colors.muted, fontSize: 12, marginTop: 8 },
   trainingDone: {
     flexDirection: "row",
@@ -434,28 +478,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 6,
     backgroundColor: colors.accent,
-    borderRadius: 11,
-    paddingVertical: 12,
+    borderRadius: 14,
+    paddingVertical: 13,
     marginTop: 14,
   },
-  cardButtonText: { color: colors.bg, fontSize: 14, fontWeight: "700" },
+  cardButtonText: { color: colors.accentText, fontSize: 15, fontWeight: "700" },
   cardButtonGhost: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 4,
-    borderRadius: 11,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: colors.line,
-    paddingVertical: 11,
+    borderColor: colors.lineStrong,
+    paddingVertical: 12,
     marginTop: 14,
   },
   cardButtonGhostText: { color: colors.muted, fontSize: 13, fontWeight: "600" },
-  quickRow: { flexDirection: "row", gap: 12, marginTop: 16 },
+  logLink: { alignItems: "center", paddingVertical: 10, marginTop: 2 },
+  logLinkText: { color: colors.muted, fontSize: 13, fontWeight: "600" },
+  quickRow: { flexDirection: "row", gap: 12, marginTop: 14 },
   quickAction: {
     flex: 1,
     backgroundColor: colors.surface,
-    borderRadius: 14,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.line,
     paddingVertical: 18,

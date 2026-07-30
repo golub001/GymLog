@@ -68,8 +68,8 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: "center",
   },
-  logo: { fontSize: 34, fontWeight: "800", color: colors.text, textAlign: "center" },
-  subtitle: { fontSize: 13, color: colors.muted, textAlign: "center", marginTop: 6 },
+  logo: { fontSize: 40, fontWeight: "900", letterSpacing: -1, color: colors.text, textAlign: "center" },
+  subtitle: { fontSize: 14, color: colors.muted, textAlign: "center", marginTop: 8 },
   form: { marginTop: 40 },
   errorText: {
     color: colors.danger,

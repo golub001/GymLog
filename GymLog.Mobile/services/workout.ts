@@ -75,6 +75,20 @@ export async function getWorkoutsByDate(
   }
 }
 
+export async function getLastWorkoutByPlanDay(
+  planDayId: number
+): Promise<WorkoutDetail | null> {
+  try {
+    const response = await api.get<WorkoutDetail>(
+      `/workouts/last-by-plan-day/${planDayId}`
+    );
+    // 204 No Content → axios gives empty string / no data
+    return response.data && (response.data as any).id ? response.data : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getMuscleStats(): Promise<MuscleStat[]> {
   try {
     const response = await api.get<MuscleStat[]>("/workouts/muscle-stats");

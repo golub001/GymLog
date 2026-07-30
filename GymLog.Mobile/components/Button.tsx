@@ -46,9 +46,10 @@ export default function Button({ title, onPress, variant = "primary" }: ButtonPr
 
 const styles = StyleSheet.create({
   base: {
-    paddingVertical: 14,
-    borderRadius: 12,
+    height: 52,
+    borderRadius: 14,
     alignItems: "center",
+    justifyContent: "center",
   },
   primary: {
     backgroundColor: colors.accent,
@@ -56,14 +57,15 @@ const styles = StyleSheet.create({
   ghost: {
     backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: colors.lineStrong,
   },
   text: {
-    fontSize: 14,
-    fontWeight: "bold",
+    fontSize: 15,
+    fontWeight: "700",
+    letterSpacing: 0.1,
   },
   primaryText: {
-    color: colors.bg,
+    color: colors.accentText,
   },
   ghostText: {
     color: colors.text,

@@ -56,7 +56,7 @@ namespace GymLog.Api.Services
                     (EF.Functions.ILike(u.Name, pattern) || EF.Functions.ILike(u.Email, pattern)))
                 .OrderBy(u => u.Name)
                 .Take(20)
-                .Select(u => new { u.Id, u.Name, u.Email })
+                .Select(u => new { u.Id, u.Name, u.Email, u.AvatarFileName })
                 .ToListAsync();
 
             var ids = users.Select(u => u.Id).ToList();
@@ -88,6 +88,7 @@ namespace GymLog.Api.Services
                     UserId = u.Id,
                     Name = u.Name,
                     Email = u.Email,
+                    AvatarUrl = UserService.AvatarUrl(u.AvatarFileName),
                     Status = status,
                     FriendshipId = link?.Id
                 };
@@ -183,7 +184,11 @@ namespace GymLog.Api.Services
                     FriendshipId = f.Id,
                     UserId = f.RequesterId == userId ? f.AddresseeId : f.RequesterId,
                     Name = f.RequesterId == userId ? f.Addressee.Name : f.Requester.Name,
-                    Email = f.RequesterId == userId ? f.Addressee.Email : f.Requester.Email
+                    Email = f.RequesterId == userId ? f.Addressee.Email : f.Requester.Email,
+                    AvatarUrl =
+                        (f.RequesterId == userId ? f.Addressee.AvatarFileName : f.Requester.AvatarFileName) == null
+                            ? null
+                            : "/uploads/avatars/" + (f.RequesterId == userId ? f.Addressee.AvatarFileName : f.Requester.AvatarFileName)
                 })
                 .OrderBy(f => f.Name)
                 .ToListAsync();
@@ -200,6 +205,9 @@ namespace GymLog.Api.Services
                     UserId = f.RequesterId,
                     Name = f.Requester.Name,
                     Email = f.Requester.Email,
+                    AvatarUrl = f.Requester.AvatarFileName == null
+                        ? null
+                        : "/uploads/avatars/" + f.Requester.AvatarFileName,
                     CreatedAt = f.CreatedAt
                 })
                 .ToListAsync();

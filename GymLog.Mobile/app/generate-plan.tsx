@@ -8,7 +8,7 @@ import {
   TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
 import LoadingOverlay from "../components/LoadingOverlay";
@@ -28,9 +28,19 @@ const DAY_OPTIONS = [3, 4, 5, 6];
 
 export default function GeneratePlan() {
   const router = useRouter();
-  const [prompt, setPrompt] = useState("");
-  const [equipment, setEquipment] = useState<string[]>([]);
-  const [days, setDays] = useState<number | null>(null);
+  const params = useLocalSearchParams<{
+    prompt?: string;
+    days?: string;
+    equipment?: string;
+  }>();
+
+  const [prompt, setPrompt] = useState(params.prompt ?? "");
+  const [equipment, setEquipment] = useState<string[]>(
+    params.equipment ? params.equipment.split(",").filter(Boolean) : []
+  );
+  const [days, setDays] = useState<number | null>(
+    params.days ? Number(params.days) : null
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,6 +85,14 @@ export default function GeneratePlan() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.label}>What do you want?</Text>
+        {params.prompt ? (
+          <View style={styles.prefillNote}>
+            <Ionicons name="sparkles" size={14} color={colors.accent} />
+            <Text style={styles.prefillNoteText}>
+              Suggested from your answers — edit anything you like.
+            </Text>
+          </View>
+        ) : null}
         <TextInput
           style={styles.promptInput}
           value={prompt}
@@ -165,10 +183,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   promptInput: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surface2,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 14,
     fontSize: 14,
     color: colors.text,
@@ -179,7 +197,7 @@ const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 9,
-    borderRadius: 10,
+    borderRadius: 999,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.line,
@@ -187,7 +205,7 @@ const styles = StyleSheet.create({
   dayChip: {
     width: 48,
     paddingVertical: 9,
-    borderRadius: 10,
+    borderRadius: 999,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.line,
@@ -195,8 +213,15 @@ const styles = StyleSheet.create({
   },
   chipActive: { backgroundColor: colors.accent, borderColor: colors.accent },
   chipText: { color: colors.text, fontSize: 13, fontWeight: "600" },
-  chipTextActive: { color: colors.bg },
+  chipTextActive: { color: colors.accentText, fontWeight: "700" },
   hint: { color: colors.muted, fontSize: 12, marginTop: 8 },
+  prefillNote: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 8,
+  },
+  prefillNoteText: { color: colors.accent, fontSize: 12, fontWeight: "600", flex: 1 },
   error: { color: colors.danger, fontSize: 13, marginTop: 18 },
   generateBtn: {
     flexDirection: "row",
@@ -204,11 +229,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     backgroundColor: colors.accent,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 15,
     marginTop: 26,
   },
-  generateText: { color: colors.bg, fontSize: 15, fontWeight: "700" },
+  generateText: { color: colors.accentText, fontSize: 15, fontWeight: "700" },
   note: {
     color: colors.muted,
     fontSize: 12,

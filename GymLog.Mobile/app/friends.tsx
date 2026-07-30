@@ -28,6 +28,7 @@ import {
 import { createSession } from "../services/sessions";
 import { syncSessionReminders } from "../services/reminders";
 import MapPicker from "../components/MapPicker";
+import Avatar from "../components/Avatar";
 import { useEmbedded } from "../components/embedded";
 
 export default function FriendsScreen() {
@@ -275,11 +276,7 @@ export default function FriendsScreen() {
           ) : (
             results.map((user) => (
               <View key={user.userId} style={styles.row}>
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>
-                    {user.name.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
+                <Avatar name={user.name} avatarUrl={user.avatarUrl} size={42} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.rowName}>{user.name}</Text>
                   <Text style={styles.rowSub}>{user.email}</Text>
@@ -299,11 +296,7 @@ export default function FriendsScreen() {
                 </Text>
                 {requests.map((req) => (
                   <View key={req.friendshipId} style={styles.row}>
-                    <View style={styles.avatar}>
-                      <Text style={styles.avatarText}>
-                        {req.name.charAt(0).toUpperCase()}
-                      </Text>
-                    </View>
+                    <Avatar name={req.name} avatarUrl={req.avatarUrl} size={42} />
                     <View style={{ flex: 1 }}>
                       <Text style={styles.rowName}>{req.name}</Text>
                       <Text style={styles.rowSub}>{req.email}</Text>
@@ -340,11 +333,7 @@ export default function FriendsScreen() {
             ) : (
               friends.map((friend) => (
                 <View key={friend.friendshipId} style={styles.row}>
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>
-                      {friend.name.charAt(0).toUpperCase()}
-                    </Text>
-                  </View>
+                  <Avatar name={friend.name} avatarUrl={friend.avatarUrl} size={42} />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.rowName}>{friend.name}</Text>
                     <Text style={styles.rowSub}>{friend.email}</Text>
@@ -356,6 +345,7 @@ export default function FriendsScreen() {
                         params: {
                           friendUserId: String(friend.userId),
                           friendName: friend.name,
+                          friendAvatar: friend.avatarUrl ?? "",
                         },
                       } as any)
                     }
@@ -577,11 +567,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surface2,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 12,
-    paddingHorizontal: 12,
+    borderRadius: 14,
+    paddingHorizontal: 14,
     marginHorizontal: 18,
     marginTop: 14,
   },
@@ -589,9 +579,9 @@ const styles = StyleSheet.create({
     flex: 1,
     color: colors.text,
     fontSize: 14,
-    paddingVertical: 11,
+    paddingVertical: 13,
   },
-  content: { padding: 18, paddingBottom: 50 },
+  content: { padding: 18, paddingBottom: 36 },
   sectionLabel: {
     color: colors.muted,
     fontSize: 11,
@@ -608,15 +598,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 8,
+    borderRadius: 16,
+    padding: 13,
+    marginBottom: 9,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.surface2,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.accentDim,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -627,12 +617,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    borderRadius: 9,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    borderRadius: 10,
+    paddingHorizontal: 13,
+    paddingVertical: 8,
   },
   actionAccent: { backgroundColor: colors.accent },
-  actionAccentText: { color: colors.bg, fontSize: 13, fontWeight: "700" },
+  actionAccentText: { color: colors.accentText, fontSize: 13, fontWeight: "700" },
   actionMuted: {
     backgroundColor: colors.surface2,
   },
@@ -679,7 +669,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 16,
+    borderRadius: 22,
     padding: 20,
   },
   modalTitle: { color: colors.text, fontSize: 17, fontWeight: "800" },
@@ -754,19 +744,19 @@ const styles = StyleSheet.create({
   modalCancel: {
     flex: 1,
     alignItems: "center",
-    paddingVertical: 13,
-    borderRadius: 11,
+    paddingVertical: 14,
+    borderRadius: 14,
     backgroundColor: colors.surface2,
   },
   modalCancelText: { color: colors.text, fontSize: 14, fontWeight: "600" },
   modalSend: {
     flex: 1,
     alignItems: "center",
-    paddingVertical: 13,
-    borderRadius: 11,
+    paddingVertical: 14,
+    borderRadius: 14,
     backgroundColor: colors.accent,
   },
-  modalSendText: { color: colors.bg, fontSize: 14, fontWeight: "800" },
+  modalSendText: { color: colors.accentText, fontSize: 14, fontWeight: "800" },
   emptyWrap: { alignItems: "center", padding: 30, gap: 10 },
   emptyTitle: { color: colors.text, fontSize: 16, fontWeight: "700" },
   emptyText: {

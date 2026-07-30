@@ -270,13 +270,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
     backgroundColor: colors.accent,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 28,
     marginTop: 8,
   },
   addBtnText: {
-    color: colors.bg,
+    color: colors.accentText,
     fontSize: 15,
     fontWeight: "700",
   },
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   statBox: {
     flex: 1,
     backgroundColor: colors.surface,
-    borderRadius: 14,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.line,
     padding: 16,
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
   },
   chartCard: {
     backgroundColor: colors.surface,
-    borderRadius: 14,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.line,
     paddingVertical: 16,
@@ -396,14 +396,14 @@ const styles = StyleSheet.create({
   },
   modalBtn: {
     flex: 1,
-    paddingVertical: 13,
-    borderRadius: 11,
+    paddingVertical: 14,
+    borderRadius: 14,
     alignItems: "center",
   },
   cancelBtn: {
     backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: colors.lineStrong,
   },
   cancelText: {
     color: colors.text,
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
   saveText: {
-    color: colors.bg,
+    color: colors.accentText,
     fontSize: 14,
     fontWeight: "700",
   },

@@ -14,6 +14,15 @@ export type FoodSearchItem = {
   proteinPer100g: number;
   carbsPer100g: number;
   fatPer100g: number;
+  isCustom: boolean;
+};
+
+export type NewFood = {
+  name: string;
+  kcalPer100g: number;
+  proteinPer100g: number;
+  carbsPer100g: number;
+  fatPer100g: number;
 };
 
 export type DiaryEntry = {
@@ -39,8 +48,15 @@ export type DiaryDay = {
 
 export type UserProfile = {
   name: string;
+  avatarUrl: string | null;
   dailyCalorieGoal: number | null;
   dailyProteinGoal: number | null;
+  sex: "Male" | "Female" | null;
+  birthDate: string | null;
+  heightCm: number | null;
+  activityLevel: "Sedentary" | "Moderate" | "Active" | null;
+  goalType: "LoseWeight" | "GainMass" | "Maintain" | null;
+  latestWeightKg: number | null;
 };
 
 export type NutritionSummary = {

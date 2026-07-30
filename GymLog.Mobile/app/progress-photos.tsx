@@ -43,6 +43,7 @@ export default function ProgressPhotosScreen() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [selected, setSelected] = useState<ProgressPhoto | null>(null);
+  const [pendingUri, setPendingUri] = useState<string | null>(null);
 
   const load = useCallback(() => {
     getProgressPhotos().then((data) => {
@@ -57,26 +58,60 @@ export default function ProgressPhotosScreen() {
     }, [load])
   );
 
-  async function pickAndUpload() {
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  const today = new Date().toISOString().slice(0, 10);
+  const hasTodayPhoto = photos.some((p) => p.takenAt.slice(0, 10) === today);
+
+  function startAdd() {
+    if (hasTodayPhoto) {
+      Alert.alert(
+        "One per day",
+        "You've already added a progress photo today. Come back tomorrow!"
+      );
+      return;
+    }
+    Alert.alert("Add progress photo", "Choose a source", [
+      { text: "Take Photo", onPress: () => pickFrom("camera") },
+      { text: "Choose from Library", onPress: () => pickFrom("library") },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  }
+
+  async function pickFrom(source: "camera" | "library") {
+    let perm;
+    if (source === "camera") {
+      perm = await ImagePicker.requestCameraPermissionsAsync();
+    } else {
+      perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    }
     if (!perm.granted) {
       Alert.alert(
         "Permission needed",
-        "Allow photo access to add a progress photo."
+        source === "camera"
+          ? "Allow camera access to take a progress photo."
+          : "Allow photo access to add a progress photo."
       );
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      quality: 0.7,
-    });
+    const result =
+      source === "camera"
+        ? await ImagePicker.launchCameraAsync({ quality: 0.7 })
+        : await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ["images"],
+            quality: 0.7,
+          });
 
     if (result.canceled || !result.assets?.length) return;
+    // hand off to the confirmation step
+    setPendingUri(result.assets[0].uri);
+  }
 
+  async function confirmUpload() {
+    if (!pendingUri) return;
+    const uri = pendingUri;
+    setPendingUri(null);
     setUploading(true);
-    const today = new Date().toISOString().slice(0, 10);
-    const uploaded = await uploadProgressPhoto(result.assets[0].uri, today);
+    const uploaded = await uploadProgressPhoto(uri, today);
     setUploading(false);
 
     if (uploaded.ok) {
@@ -110,8 +145,12 @@ export default function ProgressPhotosScreen() {
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
         <Text style={styles.headerTitle}>Progress Photos</Text>
-        <Pressable onPress={pickAndUpload} hitSlop={10} disabled={uploading}>
-          <Ionicons name="add" size={28} color={colors.accent} />
+        <Pressable onPress={startAdd} hitSlop={10} disabled={uploading}>
+          <Ionicons
+            name="add"
+            size={28}
+            color={hasTodayPhoto ? colors.muted : colors.accent}
+          />
         </Pressable>
       </View>
 
@@ -124,8 +163,8 @@ export default function ProgressPhotosScreen() {
           <Text style={styles.emptyText}>
             Track your progress over time. Tap + to add your first photo.
           </Text>
-          <Pressable style={styles.addBtn} onPress={pickAndUpload}>
-            <Ionicons name="add" size={18} color={colors.bg} />
+          <Pressable style={styles.addBtn} onPress={startAdd}>
+            <Ionicons name="add" size={18} color={colors.accentText} />
             <Text style={styles.addBtnText}>Add photo</Text>
           </Pressable>
         </View>
@@ -190,6 +229,47 @@ export default function ProgressPhotosScreen() {
           )}
         </View>
       </Modal>
+
+      <Modal
+        visible={pendingUri !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPendingUri(null)}
+      >
+        <View style={styles.confirmBg}>
+          <View style={styles.confirmCard}>
+            <Text style={styles.confirmTitle}>Use this photo?</Text>
+            {pendingUri && (
+              <Image
+                source={{ uri: pendingUri }}
+                style={styles.confirmImg}
+                contentFit="cover"
+              />
+            )}
+            <Pressable style={styles.confirmUseBtn} onPress={confirmUpload}>
+              <Ionicons name="checkmark" size={18} color={colors.accentText} />
+              <Text style={styles.confirmUseText}>Use this photo</Text>
+            </Pressable>
+            <View style={styles.confirmSecondRow}>
+              <Pressable
+                style={styles.confirmRetakeBtn}
+                onPress={() => {
+                  setPendingUri(null);
+                  startAdd();
+                }}
+              >
+                <Text style={styles.confirmRetakeText}>Choose another</Text>
+              </Pressable>
+              <Pressable
+                style={styles.confirmCancelBtn}
+                onPress={() => setPendingUri(null)}
+              >
+                <Text style={styles.confirmCancelText}>Cancel</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -223,7 +303,7 @@ const styles = StyleSheet.create({
   tile: {
     width: TILE,
     height: TILE * 1.3,
-    borderRadius: 14,
+    borderRadius: 18,
     overflow: "hidden",
     backgroundColor: colors.surface,
     borderWidth: 1,
@@ -259,12 +339,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
     backgroundColor: colors.accent,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 18,
-    paddingVertical: 11,
+    paddingVertical: 13,
     marginTop: 8,
   },
-  addBtnText: { color: colors.bg, fontSize: 15, fontWeight: "700" },
+  addBtnText: { color: colors.accentText, fontSize: 15, fontWeight: "700" },
   uploadOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(14,15,18,0.6)",
@@ -273,6 +353,60 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   uploadText: { color: colors.text, fontSize: 15, fontWeight: "600" },
+  confirmBg: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.8)",
+    justifyContent: "center",
+    padding: 24,
+  },
+  confirmCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: colors.line,
+    padding: 18,
+  },
+  confirmTitle: {
+    color: colors.text,
+    fontSize: 17,
+    fontWeight: "800",
+    textAlign: "center",
+    marginBottom: 14,
+  },
+  confirmImg: {
+    width: "100%",
+    height: 320,
+    borderRadius: 16,
+    backgroundColor: colors.surface2,
+  },
+  confirmUseBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: colors.accent,
+    borderRadius: 14,
+    paddingVertical: 14,
+    marginTop: 16,
+  },
+  confirmUseText: { color: colors.accentText, fontSize: 15, fontWeight: "700" },
+  confirmSecondRow: { flexDirection: "row", gap: 10, marginTop: 10 },
+  confirmRetakeBtn: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 13,
+    borderRadius: 14,
+    backgroundColor: colors.surface2,
+  },
+  confirmRetakeText: { color: colors.text, fontSize: 14, fontWeight: "600" },
+  confirmCancelBtn: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 13,
+    borderRadius: 14,
+    backgroundColor: colors.surface2,
+  },
+  confirmCancelText: { color: colors.muted, fontSize: 14, fontWeight: "600" },
   modalBg: { flex: 1, backgroundColor: "rgba(0,0,0,0.94)" },
   modalHeader: {
     flexDirection: "row",

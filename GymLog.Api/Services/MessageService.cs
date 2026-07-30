@@ -128,17 +128,20 @@ namespace GymLog.Api.Services
             var byFriend = messages.GroupBy(m => m.OtherId).ToList();
             var friendIds = byFriend.Select(g => g.Key).ToList();
 
-            var names = await _database.Users
+            var users = await _database.Users
                 .Where(u => friendIds.Contains(u.Id))
-                .ToDictionaryAsync(u => u.Id, u => u.Name);
+                .Select(u => new { u.Id, u.Name, u.AvatarFileName })
+                .ToDictionaryAsync(u => u.Id, u => u);
 
             return byFriend.Select(g =>
             {
                 var last = g.First();
+                var friend = users.GetValueOrDefault(g.Key);
                 return new ConversationDto
                 {
                     FriendUserId = g.Key,
-                    FriendName = names.GetValueOrDefault(g.Key, "Unknown"),
+                    FriendName = friend?.Name ?? "Unknown",
+                    FriendAvatarUrl = UserService.AvatarUrl(friend?.AvatarFileName),
                     LastMessage = last.Content,
                     LastSentAt = last.SentAt,
                     UnreadCount = g.Count(m => m.ReceiverId == userId && m.ReadAt == null)

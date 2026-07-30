@@ -10,6 +10,7 @@ export type ChatMessage = {
 export type Conversation = {
   friendUserId: number;
   friendName: string;
+  friendAvatarUrl: string | null;
   lastMessage: string;
   lastSentAt: string;
   unreadCount: number;

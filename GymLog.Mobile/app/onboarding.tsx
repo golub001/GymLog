@@ -1,7 +1,16 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ScrollView,
+  Platform,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { colors } from "../theme/colors";
 import Input from "../components/Input";
 import Button from "../components/Button";
@@ -26,7 +35,8 @@ export default function Onboarding() {
 
   const [goalType, setGoalType] = useState<GoalType | null>(null);
   const [sex, setSex] = useState<Sex>("Male");
-  const [age, setAge] = useState("");
+  const [birthDate, setBirthDate] = useState<Date | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
   const [activityLevel, setActivityLevel] = useState<ActivityLevel>("Moderate");
@@ -34,11 +44,44 @@ export default function Onboarding() {
   const [result, setResult] = useState<OnboardingResult | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
+  const defaultDob = (() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 25);
+    return d;
+  })();
+
+  function toIsoDate(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+      d.getDate()
+    ).padStart(2, "0")}`;
+  }
+
+  function computeAge(d: Date): number {
+    const today = new Date();
+    let age = today.getFullYear() - d.getFullYear();
+    const m = today.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < d.getDate())) age--;
+    return age;
+  }
+
+  function formatDob(d: Date): string {
+    return d.toLocaleDateString(undefined, {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  }
+
+  function onDobChange(event: any, date?: Date) {
+    if (Platform.OS === "android") setShowPicker(false);
+    if (event.type === "dismissed" || !date) return;
+    setBirthDate(date);
+  }
+
   function buildData(): OnboardingData {
-    const birthYear = new Date().getFullYear() - parseInt(age, 10);
     return {
       sex,
-      birthDate: `${birthYear}-01-01`,
+      birthDate: birthDate ? toIsoDate(birthDate) : toIsoDate(defaultDob),
       heightCm: parseInt(height, 10),
       weightKg: parseFloat(weight),
       activityLevel,
@@ -51,7 +94,7 @@ export default function Onboarding() {
       setError("Please pick a goal.");
       return;
     }
-    if (step === 2 && (!age || !height || !weight)) {
+    if (step === 2 && (!birthDate || !height || !weight)) {
       setError("Please fill in all fields.");
       return;
     }
@@ -160,13 +203,36 @@ export default function Onboarding() {
               />
             </View>
 
-            <Text style={styles.label}>Age</Text>
-            <Input
-              placeholder="Age"
-              value={age}
-              onChangeText={setAge}
-              keyboardType="numeric"
-            />
+            <Text style={styles.label}>Date of birth</Text>
+            <Pressable
+              style={styles.dobField}
+              onPress={() => setShowPicker(true)}
+            >
+              <Ionicons
+                name="calendar-outline"
+                size={18}
+                color={colors.accent}
+              />
+              <Text
+                style={[
+                  styles.dobText,
+                  !birthDate && { color: colors.dim },
+                ]}
+              >
+                {birthDate
+                  ? `${formatDob(birthDate)} · ${computeAge(birthDate)} yrs`
+                  : "Select your date of birth"}
+              </Text>
+            </Pressable>
+            {showPicker && (
+              <DateTimePicker
+                value={birthDate ?? defaultDob}
+                mode="date"
+                maximumDate={new Date()}
+                minimumDate={new Date(1920, 0, 1)}
+                onChange={onDobChange}
+              />
+            )}
 
             <Text style={styles.label}>Height (cm)</Text>
             <Input
@@ -212,7 +278,14 @@ export default function Onboarding() {
 
             <ReviewRow label="Goal" value={goalLabel(goalType)} />
             <ReviewRow label="Sex" value={sex} />
-            <ReviewRow label="Age" value={age} />
+            <ReviewRow
+              label="Date of birth"
+              value={
+                birthDate
+                  ? `${formatDob(birthDate)} (${computeAge(birthDate)} yrs)`
+                  : "-"
+              }
+            />
             <ReviewRow label="Height" value={`${height} cm`} />
             <ReviewRow label="Weight" value={`${weight} kg`} />
             <ReviewRow label="Activity" value={activityLevel} />
@@ -398,13 +471,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 14,
-    padding: 14,
+    borderRadius: 18,
+    padding: 15,
     marginBottom: 10,
   },
   cardSelected: {
     borderColor: colors.accent,
-    backgroundColor: colors.surface2,
+    backgroundColor: colors.accentDim,
   },
   cardEmoji: {
     fontSize: 24,
@@ -423,13 +496,26 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
   },
+  dobField: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: colors.surface2,
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    height: 52,
+    marginBottom: 12,
+  },
+  dobText: { color: colors.text, fontSize: 15, fontWeight: "600", flex: 1 },
   segmentOption: {
     flex: 1,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 11,
-    paddingVertical: 11,
+    borderRadius: 14,
+    paddingVertical: 12,
     alignItems: "center",
   },
   segmentOptionActive: {
@@ -442,7 +528,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   segmentTextActive: {
-    color: colors.bg,
+    color: colors.accentText,
     fontWeight: "700",
   },
   reviewRow: {
@@ -451,8 +537,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 12,
-    padding: 14,
+    borderRadius: 16,
+    padding: 15,
     marginBottom: 8,
   },
   reviewLabel: {

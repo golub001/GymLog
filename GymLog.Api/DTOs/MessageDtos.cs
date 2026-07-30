@@ -23,6 +23,7 @@ namespace GymLog.Api.DTOs
     {
         public int FriendUserId { get; set; }
         public string FriendName { get; set; } = "";
+        public string? FriendAvatarUrl { get; set; }
         public string LastMessage { get; set; } = "";
         public DateTime LastSentAt { get; set; }
         public int UnreadCount { get; set; }
