@@ -18,6 +18,10 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
+# Firebase (per-developer; create your own project - see README)
+google-services.json
+GoogleService-Info.plist
+
 # Metro
 .metro-health-check*
 

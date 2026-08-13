@@ -11,8 +11,6 @@ public static class DataSeeder
 
     public static async Task SeedExercisesAsync(AppDbContext db)
     {
-        if (await db.Exercises.AnyAsync()) return;
-
         var jsonPath = Path.Combine(AppContext.BaseDirectory, "Data", "exercises.json");
         if (!File.Exists(jsonPath)) return;
 
@@ -26,11 +24,21 @@ public static class DataSeeder
         var raw = JsonSerializer.Deserialize<List<ExerciseJson>>(json, options);
         if (raw == null) return;
 
+        // Insert only what is missing, so the seeder can top up an existing database
+        // without touching rows that workouts and plans already reference.
+        var existingNames = await db.Exercises
+            .Select(e => e.Name)
+            .ToListAsync();
+        var known = new HashSet<string>(existingNames, StringComparer.OrdinalIgnoreCase);
+
         var exercises = new List<Exercise>();
         foreach (var r in raw)
         {
-            var muscle = MapMuscleGroup(r.BodyPart, r.MuscleGroup);
+            var muscle = MapMuscleGroup(r.BodyPart, r.MuscleGroup, r.Target);
             if (muscle == null) continue;
+
+            var name = Capitalize(r.Name);
+            if (!known.Add(name)) continue;
 
             string? instructions = null;
             if (r.InstructionSteps?.En != null && r.InstructionSteps.En.Count > 0)
@@ -42,7 +50,7 @@ public static class DataSeeder
 
             exercises.Add(new Exercise
             {
-                Name = Capitalize(r.Name),
+                Name = name,
                 MuscleGroup = muscle.Value,
                 Equipment = !string.IsNullOrWhiteSpace(r.Equipment)
                     ? Capitalize(r.Equipment)
@@ -61,10 +69,11 @@ public static class DataSeeder
         await db.SaveChangesAsync();
     }
 
-    private static MuscleGroup? MapMuscleGroup(string? bodyPart, string? muscleGroup)
+    private static MuscleGroup? MapMuscleGroup(string? bodyPart, string? muscleGroup, string? target)
     {
         var bp = bodyPart?.ToLowerInvariant() ?? "";
         var mg = muscleGroup?.ToLowerInvariant() ?? "";
+        var tg = target?.ToLowerInvariant() ?? "";
 
         return bp switch
         {
@@ -74,8 +83,11 @@ public static class DataSeeder
             "waist" => MuscleGroup.Core,
             "upper legs" => MuscleGroup.Legs,
             "lower legs" => MuscleGroup.Legs,
-            "upper arms" => mg.Contains("biceps") ? MuscleGroup.Biceps
-                : mg.Contains("triceps") ? MuscleGroup.Triceps
+            // The dataset's muscle_group column is unreliable for arms — it holds
+            // values like "forearms" or "chest" and never names the actual muscle —
+            // so target is the authoritative field here.
+            "upper arms" => $"{tg} {mg}".Contains("triceps") ? MuscleGroup.Triceps
+                : $"{tg} {mg}".Contains("biceps") ? MuscleGroup.Biceps
                 : (MuscleGroup?)null,
             "lower arms" => MuscleGroup.Biceps,
             _ => null

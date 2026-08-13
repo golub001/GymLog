@@ -32,10 +32,23 @@ namespace GymLog.Api.Services
 
                 var content = new StringContent(payload, Encoding.UTF8, "application/json");
                 var response = await _http.PostAsync("https://exp.host/--/api/v2/push/send", content);
+                var responseBody = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogWarning("Expo push failed with status {Status}", response.StatusCode);
+                    _logger.LogWarning("Expo push failed with status {Status}: {Body}",
+                        response.StatusCode, responseBody);
+                    return;
+                }
+
+                // Expo answers 200 even when the ticket itself failed (e.g. DeviceNotRegistered,
+                // missing FCM credentials), so the ticket status has to be inspected separately.
+                using var ticket = JsonDocument.Parse(responseBody);
+                if (ticket.RootElement.TryGetProperty("data", out var ticketData) &&
+                    ticketData.TryGetProperty("status", out var status) &&
+                    status.GetString() == "error")
+                {
+                    _logger.LogWarning("Expo push ticket rejected: {Body}", responseBody);
                 }
             }
             catch (Exception ex)

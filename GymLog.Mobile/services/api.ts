@@ -1,7 +1,10 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
-export const API_HOST = "http://192.168.0.11:5166";
+// 10.0.2.2 je adresa preko koje Android emulator uvek vidi računar na kom radi,
+// nezavisno od mreze. Za pokretanje na fizickom telefonu ovde ide LAN adresa
+// računara (npr. http://192.168.0.11:5166), uz uslov da su na istoj mreži.
+export const API_HOST = "http://10.0.2.2:5166";
 
 export const api = axios.create({
   baseURL: `${API_HOST}/api`,

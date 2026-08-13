@@ -164,7 +164,16 @@ Scan the QR code with Expo Go, or press `a` for an Android emulator.
 | Moderation service URL | `appsettings.json` → `Moderation:BaseUrl` | set `Moderation:Enabled=false` to skip CV checks in development |
 | API host (mobile) | `GymLog.Mobile/services/api.ts` → `API_HOST` | LAN IP (device) or `10.0.2.2` (emulator) |
 
-**Push notifications** require a development build (`npx expo run:android`) plus an Expo project (`eas init`) and a Firebase project — remote push does not work in Expo Go. Everything else, including real‑time chat and local reminders, works in Expo Go.
+### Push notifications
+
+Remote push does not work in Expo Go — it needs a development build and your own Firebase project. Everything else, including real‑time chat and local reminders, works in Expo Go.
+
+1. `npx eas-cli@latest init` — links the app to an EAS project and writes `extra.eas.projectId` into `app.json`. Without it the client skips token registration entirely.
+2. Create a Firebase project and add an **Android** app with package name `com.gymlog.mobile`. Download `google-services.json` into `GymLog.Mobile/`. This file is gitignored — each developer uses their own.
+3. Firebase → Project settings → **Service accounts** → *Generate new private key*, then upload that JSON to your Expo project under **Credentials → FCM V1 service account key**. This is what lets Expo's push service deliver to your app; it is a different file from `google-services.json`, and not the "Play Store submissions" key.
+4. `npx expo run:android` to build and install the dev build.
+
+To verify the chain end to end: log in (a token should appear in `Users.ExpoPushToken`), then `POST https://exp.host/--/api/v2/push/send` with that token, then close the app and have another account send you a message.
 
 ---
 

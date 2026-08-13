@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "GymLog.Mobile",
-    "slug": "GymLog.Mobile",
+    "name": "GymLog",
+    "slug": "GymLogMobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -23,9 +23,9 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#0E0F12",
           "dark": {
-            "backgroundColor": "#000000"
+            "backgroundColor": "#0E0F12"
           }
         }
       ],
@@ -34,6 +34,7 @@
       [
         "expo-notifications",
         {
+          "icon": "./assets/images/notification-icon.png",
           "color": "#C4F82A",
           "defaultChannel": "default"
         }
@@ -42,24 +43,41 @@
         "expo-image-picker",
         {
           "photosPermission": "Allow GymLog to access your photos to add progress pictures.",
-          "cameraPermission": "Allow GymLog to use the camera to take progress pictures."
+          "cameraPermission": "Allow GymLog to use the camera to take progress pictures.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
         }
       ]
     ],
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0E0F12",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.gymlog.mobile"
+      "package": "com.gymlog.mobile",
+      "googleServicesFile": "./google-services.json"
     },
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "238fd87d-c2be-4bbc-879c-0065bc6a77f5"
+      }
+    },
+    "owner": "golub001"
   }
 }
