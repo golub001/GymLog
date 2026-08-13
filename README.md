@@ -65,7 +65,7 @@ GymLog lets a user log workouts by exercise, set and rep, follow structured trai
 | **Database** | PostgreSQL 18 (Npgsql provider), code‑first migrations |
 | **CV moderation** | Python, FastAPI, Uvicorn, OpenCV (Haar cascades for face detection), NudeNet (ONNX Runtime, explicit‑content detection) |
 | **Maps** | OpenStreetMap tiles + Leaflet rendered in a WebView (no API key required) |
-| **AI** | GitHub Models (OpenAI‑compatible, `gpt-4.1-mini`) for plan generation |
+| **AI** | Gemini API via its OpenAI‑compatible endpoint (`gemini-3.6-flash`) for plan generation |
 | **Push** | Expo Push Service → Firebase Cloud Messaging |
 
 ---
@@ -160,7 +160,7 @@ Scan the QR code with Expo Go, or press `a` for an Android emulator.
 |---|---|---|
 | Database connection | `GymLog.Api/appsettings.json` → `ConnectionStrings:DefaultConnection` | PostgreSQL |
 | JWT | `appsettings.json` → `Jwt` | key, issuer, audience, 15‑min access token, 30‑day refresh |
-| AI plan generation | `dotnet user-secrets` → `Ai:ApiKey` | a GitHub PAT with the `models:read` permission |
+| AI plan generation | `dotnet user-secrets` → `Ai:ApiKey` | a Gemini API key from [AI Studio](https://aistudio.google.com); `Ai:BaseUrl` and `Ai:Model` live in `appsettings.json`. Any OpenAI‑compatible provider works without code changes |
 | Moderation service URL | `appsettings.json` → `Moderation:BaseUrl` | set `Moderation:Enabled=false` to skip CV checks in development |
 | API host (mobile) | `GymLog.Mobile/services/api.ts` → `API_HOST` | LAN IP (device) or `10.0.2.2` (emulator) |
 

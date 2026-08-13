@@ -12,12 +12,15 @@ namespace GymLog.Api.Services
         private readonly AppDbContext _db;
         private readonly HttpClient _http;
         private readonly IConfiguration _config;
+        private readonly ILogger<AiPlanService> _logger;
 
-        public AiPlanService(AppDbContext db, HttpClient http, IConfiguration config)
+        public AiPlanService(AppDbContext db, HttpClient http, IConfiguration config,
+            ILogger<AiPlanService> logger)
         {
             _db = db;
             _http = http;
             _config = config;
+            _logger = logger;
         }
 
         public async Task<int?> GeneratePlan(int userId, string prompt, List<string> equipment, int? days)
@@ -25,7 +28,11 @@ namespace GymLog.Api.Services
             var apiKey = _config["Ai:ApiKey"];
             var baseUrl = _config["Ai:BaseUrl"];
             var model = _config["Ai:Model"];
-            if (string.IsNullOrWhiteSpace(apiKey)) return null;
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                _logger.LogWarning("Ai:ApiKey is not configured - plan generation skipped.");
+                return null;
+            }
 
             var q = _db.Exercises.AsQueryable();
             if (equipment != null && equipment.Count > 0)
@@ -80,18 +87,31 @@ namespace GymLog.Api.Services
                 req.Content = JsonContent.Create(payload);
 
                 var resp = await _http.SendAsync(req);
-                if (!resp.IsSuccessStatusCode) return null;
+                if (!resp.IsSuccessStatusCode)
+                {
+                    // Without the body there is no way to tell a bad key from a retired
+                    // service from a rate limit - they all surface as one generic failure.
+                    var err = await resp.Content.ReadAsStringAsync();
+                    _logger.LogWarning("AI provider returned {Status} for model {Model}: {Body}",
+                        (int)resp.StatusCode, model, err.Length > 400 ? err[..400] : err);
+                    return null;
+                }
 
                 var doc = await resp.Content.ReadFromJsonAsync<JsonElement>();
                 content = doc.GetProperty("choices")[0]
                     .GetProperty("message").GetProperty("content").GetString();
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning(ex, "AI request to {BaseUrl} failed", baseUrl);
                 return null;
             }
 
-            if (string.IsNullOrWhiteSpace(content)) return null;
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                _logger.LogWarning("AI returned an empty response.");
+                return null;
+            }
 
             var aiPlan = ParsePlan(content);
             if (aiPlan?.Days == null || aiPlan.Days.Count == 0) return null;
